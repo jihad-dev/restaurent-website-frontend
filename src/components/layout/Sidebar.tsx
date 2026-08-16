@@ -1,0 +1,281 @@
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Users,
+  BarChart,
+  X,
+  ChevronDown,
+  ChevronRight,
+  Home,
+  Users2,
+  UtensilsCrossed,
+  Grid,
+} from "lucide-react";
+
+interface SidebarLinkProps {
+  to: string;
+  icon: React.ReactNode;
+  label: string;
+  active: boolean;
+  children?: { to: string; label: string }[];
+}
+
+const SidebarLink: React.FC<SidebarLinkProps> = ({
+  to,
+  icon,
+  label,
+  active,
+  children,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+  const hasChildren = children && children.length > 0;
+
+  const toggleSubmenu = (e: React.MouseEvent) => {
+    if (hasChildren) {
+      e.preventDefault();
+      setIsOpen(!isOpen);
+    }
+  };
+
+  return (
+    <div className="mb-1.5">
+      <Link
+        to={hasChildren ? "#" : to}
+        onClick={toggleSubmenu}
+        className={`
+          group relative flex items-center px-3.5 py-2.5 text-xs font-semibold rounded-xl w-full
+          transition-all duration-200
+          ${
+            active && !hasChildren
+              ? "bg-amber-500/10 text-amber-400 border border-amber-500/30 shadow-sm shadow-amber-500/5"
+              : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
+          }
+        `}
+      >
+        {/* Active Pill Indicator */}
+        {active && !hasChildren && (
+          <span className="absolute left-0 top-2 bottom-2 w-1 bg-amber-400 rounded-r-full shadow-sm shadow-amber-400/50" />
+        )}
+
+        <span
+          className={`mr-3 text-lg transition-transform duration-200 group-hover:scale-110 ${
+            active && !hasChildren
+              ? "text-amber-400"
+              : "text-slate-500 group-hover:text-amber-400"
+          }`}
+        >
+          {icon}
+        </span>
+        <span className="flex-1 tracking-wide">{label}</span>
+        {hasChildren && (
+          <span className="ml-auto text-slate-500 group-hover:text-slate-300">
+            {isOpen ? (
+              <ChevronDown size={15} className="text-amber-400" />
+            ) : (
+              <ChevronRight size={15} />
+            )}
+          </span>
+        )}
+      </Link>
+
+      {/* Submenu links */}
+      {hasChildren && isOpen && (
+        <div className="ml-9 mt-1 space-y-1 pl-2 border-l border-slate-800/80">
+          {children.map((child, index) => {
+            const isChildActive = location.pathname === child.to;
+            return (
+              <Link
+                key={index}
+                to={child.to}
+                className={`
+                  block px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-150
+                  ${
+                    isChildActive
+                      ? "text-amber-400 bg-amber-500/10 font-semibold"
+                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
+                  }
+                `}
+              >
+                {child.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface SidebarProps {
+  isMobile: boolean;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
+  const location = useLocation();
+
+  const navigation = [
+    {
+      to: "/dashboard/admin-home",
+      icon: <LayoutDashboard size={18} />,
+      label: "Dashboard",
+    },
+    {
+      to: "/dashboard/items",
+      icon: <Package size={18} />,
+      label: "Menu Items",
+      children: [
+        { to: "/dashboard/all-items", label: "All Dishes" },
+        { to: "/dashboard/items/add-item", label: "Add New Dish" },
+      ],
+    },
+    {
+      to: "/dashboard/categories",
+      icon: <Grid size={18} />,
+      label: "Categories",
+      children: [
+        { to: "/dashboard/categories", label: "All Categories" },
+        { to: "/dashboard/categories/add-category", label: "Add Category" },
+      ],
+    },
+    {
+      to: "/dashboard/orders",
+      icon: <ShoppingCart size={18} />,
+      label: "Kitchen Orders",
+    },
+    {
+      to: "/dashboard/sales-analytics",
+      icon: <BarChart size={18} />,
+      label: "Sales Analytics",
+    },
+    {
+      to: "/dashboard/All-admin",
+      icon: <Users2 size={18} />,
+      label: "Restaurant Staff",
+    },
+    {
+      to: "/dashboard/customers", 
+      icon: <Users2 size={18} />,
+      label: "All Customers",
+    },
+    {
+      to: "/",
+      icon: <Home size={18} />,
+      label: "Home",
+    },
+  ];
+
+  // Mobile drawer sidebar
+  if (isMobile) {
+    return (
+      <div
+        className={`
+          fixed inset-0 z-50 flex transform transition-transform duration-300 ease-in-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+        `}
+      >
+        {/* Overlay backdrop */}
+        <div
+          className={`
+            fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity duration-300
+            ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}
+          `}
+          onClick={onClose}
+        />
+
+        {/* Sidebar container */}
+        <div className="relative flex-1 flex flex-col max-w-xs w-full bg-slate-900 border-r border-slate-800 shadow-2xl">
+          <div className="absolute top-0 right-0 -mr-12 pt-3">
+            <button
+              className="flex items-center justify-center h-9 w-9 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700/60 focus:outline-none"
+              onClick={onClose}
+            >
+              <span className="sr-only">Close sidebar</span>
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+            <div className="flex-shrink-0 flex items-center px-5 mb-6">
+              <Link
+                to="/dashboard/admin-home"
+                className="flex items-center gap-2.5 group"
+                onClick={onClose}
+              >
+                <div className="p-2 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 transition-transform duration-300 group-hover:rotate-12 shadow-md shadow-amber-500/20">
+                  <UtensilsCrossed className="w-5 h-5" />
+                </div>
+                <span className="text-xl font-extrabold tracking-tight text-white group-hover:text-amber-400 transition-colors">
+                  Foodie<span className="text-amber-400">Hub</span>
+                </span>
+              </Link>
+            </div>
+
+            <nav className="px-3 space-y-1">
+              {navigation.map((item) => (
+                <SidebarLink
+                  key={item.to}
+                  to={item.to}
+                  icon={item.icon}
+                  label={item.label}
+                  active={location.pathname === item.to}
+                  children={item.children}
+                />
+              ))}
+            </nav>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop sidebar
+  return (
+    <div className="hidden md:flex md:flex-shrink-0">
+      <div className="flex flex-col w-64">
+        <div className="flex flex-col h-0 flex-1 bg-slate-900 border-r border-slate-800/80">
+          {/* Logo Section */}
+          <div className="flex items-center h-16 flex-shrink-0 px-5 border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md">
+            <Link
+              to="/dashboard/admin-home"
+              className="flex items-center gap-2.5 group"
+            >
+              <div className="p-2 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 transition-transform duration-300 group-hover:rotate-12 shadow-md shadow-amber-500/20">
+                <UtensilsCrossed className="w-5 h-5" />
+              </div>
+              <span className="text-xl font-extrabold tracking-tight text-white group-hover:text-amber-400 transition-colors">
+                Foodie<span className="text-amber-400">Hub</span>
+              </span>
+            </Link>
+          </div>
+
+          {/* Nav Items */}
+          <div className="flex-1 flex flex-col overflow-y-auto">
+            <nav className="flex-1 px-3 py-4 space-y-1">
+              <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Main Menu
+              </div>
+              {navigation.map((item) => (
+                <SidebarLink
+                  key={item.to}
+                  to={item.to}
+                  icon={item.icon}
+                  label={item.label}
+                  active={location.pathname === item.to}
+                  children={item.children}
+                />
+              ))}
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;

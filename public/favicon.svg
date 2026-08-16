@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Dark Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+
+    <!-- Flame & Cloche Orange/Amber Gradient -->
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#ea580c" />
+    </linearGradient>
+  </defs>
+
+  <!-- Base Rounded Container -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+  <rect width="504" height="504" x="4" y="4" rx="124" fill="none" stroke="url(#accentGrad)" stroke-width="8" stroke-opacity="0.3" />
+
+  <!-- Outer Glow Ring -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="url(#accentGrad)" stroke-width="6" stroke-dasharray="12 12" opacity="0.4" />
+
+  <!-- Food Cloche / Plate Graphic -->
+  <g transform="translate(0, 20)">
+    <!-- Plate Base -->
+    <path d="M 128 340 L 384 340 A 16 16 0 0 1 400 356 L 400 360 A 16 16 0 0 1 384 376 L 128 376 A 16 16 0 0 1 112 360 L 112 356 A 16 16 0 0 1 128 340 Z" fill="url(#accentGrad)" />
+
+    <!-- Cloche Dome -->
+    <path d="M 136 320 A 120 120 0 0 1 376 320 Z" fill="url(#accentGrad)" opacity="0.9" />
+
+    <!-- Top Handle Knob -->
+    <circle cx="256" cy="180" r="20" fill="url(#accentGrad)" />
+
+    <!-- Steam / Flavor Waves -->
+    <path d="M 216 140 Q 226 120 216 100" fill="none" stroke="#fbbf24" stroke-width="8" stroke-linecap="round" opacity="0.8" />
+    <path d="M 256 130 Q 266 110 256 90" fill="none" stroke="#f59e0b" stroke-width="8" stroke-linecap="round" opacity="0.9" />
+    <path d="M 296 140 Q 306 120 296 100" fill="none" stroke="#ea580c" stroke-width="8" stroke-linecap="round" opacity="0.8" />
+  </g>
+</svg>
