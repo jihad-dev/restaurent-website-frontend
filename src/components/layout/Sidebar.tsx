@@ -13,26 +13,57 @@ import {
   UtensilsCrossed,
   Grid,
   UsersRound,
+  Ticket,
+  Star,
+  Settings,
+  LogOut,
+  UserCheck,
 } from "lucide-react";
+import { useGetAllOrdersQuery } from "../../Redux/features/order/orderApi";
+
+interface ChildNavItem {
+  to: string;
+  label: string;
+}
+
+interface NavItem {
+  to: string;
+  icon: React.ReactNode;
+  label: string;
+  badge?: number | string;
+  children?: ChildNavItem[];
+}
+
+interface NavGroup {
+  groupLabel: string;
+  items: NavItem[];
+}
 
 interface SidebarLinkProps {
   to: string;
   icon: React.ReactNode;
   label: string;
   active: boolean;
-  children?: { to: string; label: string }[];
+  badge?: number | string;
+  children?: ChildNavItem[];
 }
+
 
 const SidebarLink: React.FC<SidebarLinkProps> = ({
   to,
   icon,
   label,
   active,
+  badge,
   children,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const hasChildren = children && children.length > 0;
+
+  const isAnyChildActive =
+    hasChildren && children.some((child) => location.pathname === child.to);
+
+  const [isOpen, setIsOpen] = useState(isAnyChildActive);
 
   const toggleSubmenu = (e: React.MouseEvent) => {
     if (hasChildren) {
@@ -50,20 +81,19 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
           group relative flex items-center px-3.5 py-2.5 text-xs font-semibold rounded-xl w-full
           transition-all duration-200
           ${
-            active && !hasChildren
+            active || isAnyChildActive
               ? "bg-amber-500/10 text-amber-400 border border-amber-500/30 shadow-sm shadow-amber-500/5"
               : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
           }
         `}
       >
-        {/* Active Pill Indicator */}
-        {active && !hasChildren && (
+        {(active || isAnyChildActive) && (
           <span className="absolute left-0 top-2 bottom-2 w-1 bg-amber-400 rounded-r-full shadow-sm shadow-amber-400/50" />
         )}
 
         <span
           className={`mr-3 text-lg transition-transform duration-200 group-hover:scale-110 ${
-            active && !hasChildren
+            active || isAnyChildActive
               ? "text-amber-400"
               : "text-slate-500 group-hover:text-amber-400"
           }`}
@@ -71,6 +101,14 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
           {icon}
         </span>
         <span className="flex-1 tracking-wide">{label}</span>
+
+        {/* Dynamic Badge Rendering */}
+        {badge !== undefined && Number(badge) > 0 && (
+          <span className="ml-auto mr-2 px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500 text-slate-950 animate-pulse">
+            {badge}
+          </span>
+        )}
+
         {hasChildren && (
           <span className="ml-auto text-slate-500 group-hover:text-slate-300">
             {isOpen ? (
@@ -82,7 +120,6 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
         )}
       </Link>
 
-      {/* Submenu links */}
       {hasChildren && isOpen && (
         <div className="ml-9 mt-1 space-y-1 pl-2 border-l border-slate-800/80">
           {children.map((child, index) => {
@@ -119,63 +156,159 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
   const location = useLocation();
 
-  const navigation = [
+  // RTK Query call
+  const { data: responseData } = useGetAllOrdersQuery(undefined);
+  const count = responseData?.data?.length
+// TODO
+  const navigationGroups: NavGroup[] = [
     {
-      to: "/dashboard/admin-home",
-      icon: <LayoutDashboard size={18} />,
-      label: "Dashboard",
-    },
-    {
-      to: "/dashboard/items",
-      icon: <Package size={18} />,
-      label: "Menu Items",
-      children: [
-        { to: "/dashboard/all-items", label: "All Dishes" },
-        { to: "/dashboard/items/add-item", label: "Add New Dish" },
+      groupLabel: "Main Menu",
+      items: [
+        {
+          to: "/dashboard/admin-home",
+          icon: <LayoutDashboard size={18} />,
+          label: "Dashboard",
+        },
+        {
+          to: "/dashboard/orders",
+          icon: <ShoppingCart size={18} />,
+          label: "Kitchen Orders",
+          badge: count > 0 ? count : undefined,
+        },
       ],
     },
     {
-      to: "/dashboard/categories",
-      icon: <Grid size={18} />,
-      label: "Categories",
-      children: [
-        { to: "/dashboard/categories", label: "All Categories" },
-        { to: "/dashboard/categories/add-category", label: "Add Category" },
+      groupLabel: "Menu Management",
+      items: [
+        {
+          to: "/dashboard/items",
+          icon: <Package size={18} />,
+          label: "Menu Items",
+          children: [
+            { to: "/dashboard/all-items", label: "All Dishes" },
+            { to: "/dashboard/items/add-item", label: "Add New Dish" },
+          ],
+        },
+        {
+          to: "/dashboard/categories",
+          icon: <Grid size={18} />,
+          label: "Categories",
+          children: [
+            { to: "/dashboard/categories", label: "All Categories" },
+            { to: "/dashboard/categories/add-category", label: "Add Category" },
+          ],
+        },
       ],
     },
     {
-      to: "/dashboard/orders",
-      icon: <ShoppingCart size={18} />,
-      label: "Kitchen Orders",
+      groupLabel: "User Management",
+      items: [
+        {
+          to: "/dashboard/customers",
+          icon: <Users2 size={18} />,
+          label: "All Customers",
+        },
+        {
+          to: "/dashboard/all-admin",
+          icon: <UserCheck size={18} />,
+          label: "All Admins",
+        },
+        {
+          to: "/dashboard/admin/create-admin",
+          icon: <UsersRound size={18} />,
+          label: "Create Admin",
+        },
+      ],
     },
     {
-      to: "/dashboard/sales-analytics",
-      icon: <BarChart size={18} />,
-      label: "Sales Analytics",
+      groupLabel: "Marketing & Analytics",
+      items: [
+        {
+          to: "/dashboard/sales-analytics",
+          icon: <BarChart size={18} />,
+          label: "Sales Analytics",
+        },
+        {
+          to: "/dashboard/coupons",
+          icon: <Ticket size={18} />,
+          label: "Coupons & Offers",
+        },
+        {
+          to: "/dashboard/reviews",
+          icon: <Star size={18} />,
+          label: "Customer Reviews",
+        },
+      ],
     },
     {
-      to: "/dashboard/admin/create-admin",
-      icon: <UsersRound size={18} />,
-      label: "Create Admin",
-    },
-    {
-      to: "/dashboard/customers", 
-      icon: <Users2 size={18} />,
-      label: "All Customers",
-    },
-    {
-      to: "/dashboard/all-admin", 
-      icon: <Users2 size={18} />,
-      label: "All Admins",
-    },
-    {
-      to: "/",
-      icon: <Home size={18} />,
-      label: "Home",
+      groupLabel: "System",
+      items: [
+        {
+          to: "/dashboard/settings",
+          icon: <Settings size={18} />,
+          label: "Settings",
+        },
+        {
+          to: "/",
+          icon: <Home size={18} />,
+          label: "Public Home",
+        },
+      ],
     },
   ];
 
-  // Mobile drawer sidebar
+  const renderNavContent = () => (
+    <div className="flex-1 px-3 py-4 space-y-6">
+      {navigationGroups.map((group, idx) => (
+        <div key={idx}>
+          <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            {group.groupLabel}
+          </div>
+          {group.items.map((item) => (
+            <SidebarLink
+              key={item.to}
+              to={item.to}
+              icon={item.icon}
+              label={item.label}
+              badge={item.badge}
+              active={location.pathname === item.to}
+              children={item.children}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderProfileFooter = () => (
+    <div className="p-3.5 border-t border-slate-800/80 bg-slate-950/40 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <img
+            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop"
+            alt="Admin Avatar"
+            className="w-9 h-9 rounded-xl object-cover ring-2 ring-amber-500/20"
+          />
+          <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-slate-900" />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-xs font-bold text-slate-100">
+            Jihadul Islam
+          </span>
+          <span className="text-[10px] font-medium text-amber-400">
+            Super Admin
+          </span>
+        </div>
+      </div>
+      <button
+        title="Logout"
+        className="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+      >
+        <LogOut size={16} />
+      </button>
+    </div>
+  );
+
   if (isMobile) {
     return (
       <div
@@ -184,7 +317,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
-        {/* Overlay backdrop */}
         <div
           className={`
             fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity duration-300
@@ -193,58 +325,47 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
           onClick={onClose}
         />
 
-        {/* Sidebar container */}
         <div className="relative flex-1 flex flex-col max-w-xs w-full bg-slate-900 border-r border-slate-800 shadow-2xl">
           <div className="absolute top-0 right-0 -mr-12 pt-3">
             <button
               className="flex items-center justify-center h-9 w-9 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700/60 focus:outline-none"
               onClick={onClose}
             >
-              <span className="sr-only">Close sidebar</span>
               <X size={20} />
             </button>
           </div>
 
-          <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-            <div className="flex-shrink-0 flex items-center px-5 mb-6">
-              <Link
-                to="/dashboard/admin-home"
-                className="flex items-center gap-2.5 group"
-                onClick={onClose}
-              >
-                <div className="p-2 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 transition-transform duration-300 group-hover:rotate-12 shadow-md shadow-amber-500/20">
-                  <UtensilsCrossed className="w-5 h-5" />
-                </div>
-                <span className="text-xl font-extrabold tracking-tight text-white group-hover:text-amber-400 transition-colors">
-                  Foodie<span className="text-amber-400">Hub</span>
-                </span>
-              </Link>
+          <div className="flex-1 h-0 pt-5 flex flex-col justify-between overflow-y-auto">
+            <div>
+              <div className="flex-shrink-0 flex items-center px-5 mb-6">
+                <Link
+                  to="/dashboard/admin-home"
+                  className="flex items-center gap-2.5 group"
+                  onClick={onClose}
+                >
+                  <div className="p-2 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 transition-transform duration-300 group-hover:rotate-12 shadow-md shadow-amber-500/20">
+                    <UtensilsCrossed className="w-5 h-5" />
+                  </div>
+                  <span className="text-xl font-extrabold tracking-tight text-white group-hover:text-amber-400 transition-colors">
+                    Foodie<span className="text-amber-400">Hub</span>
+                  </span>
+                </Link>
+              </div>
+
+              <nav>{renderNavContent()}</nav>
             </div>
 
-            <nav className="px-3 space-y-1">
-              {navigation.map((item) => (
-                <SidebarLink
-                  key={item.to}
-                  to={item.to}
-                  icon={item.icon}
-                  label={item.label}
-                  active={location.pathname === item.to}
-                  children={item.children}
-                />
-              ))}
-            </nav>
+            {renderProfileFooter()}
           </div>
         </div>
       </div>
     );
   }
 
-  // Desktop sidebar
   return (
     <div className="hidden md:flex md:flex-shrink-0">
       <div className="flex flex-col w-64">
         <div className="flex flex-col h-0 flex-1 bg-slate-900 border-r border-slate-800/80">
-          {/* Logo Section */}
           <div className="flex items-center h-16 flex-shrink-0 px-5 border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md">
             <Link
               to="/dashboard/admin-home"
@@ -259,23 +380,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
             </Link>
           </div>
 
-          {/* Nav Items */}
-          <div className="flex-1 flex flex-col overflow-y-auto">
-            <nav className="flex-1 px-3 py-4 space-y-1">
-              <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                Main Menu
-              </div>
-              {navigation.map((item) => (
-                <SidebarLink
-                  key={item.to}
-                  to={item.to}
-                  icon={item.icon}
-                  label={item.label}
-                  active={location.pathname === item.to}
-                  children={item.children}
-                />
-              ))}
-            </nav>
+          <div className="flex-1 flex flex-col justify-between overflow-y-auto">
+            <nav>{renderNavContent()}</nav>
+            {renderProfileFooter()}
           </div>
         </div>
       </div>
