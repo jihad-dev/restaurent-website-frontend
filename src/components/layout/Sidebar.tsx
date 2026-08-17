@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   Package,
   ShoppingCart,
-  Users,
   BarChart,
   X,
   ChevronDown,
@@ -13,6 +12,7 @@ import {
   Users2,
   UtensilsCrossed,
   Grid,
+  UsersRound,
 } from "lucide-react";
 
 interface SidebarLinkProps {
@@ -154,14 +154,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
       label: "Sales Analytics",
     },
     {
-      to: "/dashboard/All-admin",
-      icon: <Users2 size={18} />,
-      label: "Restaurant Staff",
+      to: "/dashboard/admin/create-admin",
+      icon: <UsersRound size={18} />,
+      label: "Create Admin",
     },
     {
       to: "/dashboard/customers", 
       icon: <Users2 size={18} />,
       label: "All Customers",
+    },
+    {
+      to: "/dashboard/all-admin", 
+      icon: <Users2 size={18} />,
+      label: "All Admins",
     },
     {
       to: "/",

@@ -41,6 +41,8 @@ import PaymentSuccess from "../utils/PaymentSuccess";
 import SalesAnalytics from "../Pages/AdminPage/SalesAnalytics";
 import AddCategories from "../Pages/AdminPage/AddCategories";
 import Customers from "../Pages/AdminPage/Customers";
+import CreateAdmin from "../Pages/AdminPage/CreateAdmin";
+import AllAdmin from './../Pages/AdminPage/AllAdmin';
 
 export const router = createBrowserRouter([
   {
@@ -142,22 +144,22 @@ export const router = createBrowserRouter([
       //     </PrivateRoute>
       //   ),
       // },
-      // {
-      //   path: "/dashboard/All-admin",
-      //   element: (
-      //     <PrivateRoute allowedRoles={["admin"]}>
-      //       <AllAdmin />
-      //     </PrivateRoute>
-      //   ),
-      // },
-      // {
-      //   path: "/dashboard/admin/create-admin",
-      //   element: (
-      //     <PrivateRoute allowedRoles={["admin"]}>
-      //       <CreateAdmin />
-      //     </PrivateRoute>
-      //   ),
-      // },
+      {
+        path: "/dashboard/all-admin",
+        element: (
+          <PrivateRoute allowedRoles={["admin","superAdmin"]}>
+            <AllAdmin />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/dashboard/admin/create-admin",
+        element: (
+          <PrivateRoute allowedRoles={["admin","superAdmin"]}>
+            <CreateAdmin />
+          </PrivateRoute>
+        ),
+      },
       // {
       //   path: "/dashboard/admin/admin-info/:id",
       //   element: (

@@ -194,8 +194,7 @@ const AdminHome = () => {
       reconnection: true,
     });
 
-    socket.on("new_order_notification", (notificationData) => {
-      console.log("⚡ Real-time Order Received:", notificationData);
+    socket.on("new_order_notification", () => {
       refetchNotifications();
       refetchOrders();
       playNotificationSound();
@@ -313,7 +312,7 @@ const AdminHome = () => {
                 <button
                   aria-label="Toggle Notifications"
                   onClick={() => setIsNotificationOpen((prev) => !prev)}
-                  className="relative p-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-2xl text-slate-300 hover:text-white transition-all active:scale-95 shadow-md"
+                  className="relative p-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-2xl text-slate-300 hover:text-white transition-all active:scale-95 shadow-md cursor-pointer"
                 >
                   <FiBell className="w-5 h-5" />
                   {unreadCount > 0 && (
@@ -348,7 +347,7 @@ const AdminHome = () => {
                         {unreadCount > 0 && (
                           <button
                             onClick={handleMarkAllAsRead}
-                            className="text-xs text-amber-400 hover:text-amber-300 font-semibold transition-colors"
+                            className="text-xs cursor-pointer text-amber-400 hover:text-amber-300 font-semibold transition-colors"
                           >
                             Mark all as read
                           </button>

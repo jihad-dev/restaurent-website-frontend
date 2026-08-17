@@ -1,344 +1,359 @@
-// import { useState, useEffect } from "react";
-// import { FiSearch, FiEye, FiEdit2, FiTrash2 } from "react-icons/fi";
-// import { motion, AnimatePresence } from "framer-motion";
-// import { Link } from "react-router-dom";
-// import Loader from "../../utils/Loader";
-// import Swal from "sweetalert2";
-// import { useDeleteAdminMutation, useGetAllAdminsQuery } from "../../Redux/features/admin/adminApi";
-// interface Admin {
-//     _id: string;
-//     avatar?: string;
-//     name: string;
-//     email: string;
-//     role?: string;
-//     status?: string;
-// }
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useMemo } from "react";
+import {
+  FiSearch,
+  FiEye,
+  FiTrash2,
+  FiUserPlus,
+  FiShield,
+  FiUserCheck,
+} from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
+import Loader from "../../utils/Loader";
+import Swal from "sweetalert2";
+import {
+  useDeleteAdminMutation,
+  useGetAllAdminsQuery,
+} from "../../Redux/features/admin/adminApi";
 
-// const AllAdmin = () => {
-//     const [searchTerm, setSearchTerm] = useState("");
-//     const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+interface Admin {
+  _id: string;
+  avatar?: string;
+  name: string;
+  email: string;
+  role?: string;
+  status?: string;
+}
 
-//     const { data: adminsData, isLoading } = useGetAllAdminsQuery(undefined, {
-//         refetchOnMountOrArgChange: true,
-//         refetchOnFocus: true,
-//         refetchOnReconnect: true,
-//     });
-//     const [deleteAdmin] = useDeleteAdminMutation();
+// ---------------- ⚡ ANIMATION VARIANTS ----------------
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 },
+  },
+};
 
-//     const admins = (adminsData as Admin[]) || [];
-//     const filteredAdmins = admins.filter((admin) =>
-//         admin.name.toLowerCase().includes(searchTerm) ||
-//         admin.email.toLowerCase().includes(searchTerm)
-//     );
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
+};
 
+const AllAdmin = () => {
+  const [searchTerm, setSearchTerm] = useState("");
 
-//     // Handle window resize
-//     useEffect(() => {
-//         const handleResize = () => {
-//             setIsMobile(window.innerWidth < 640);
-//         };
-//         window.addEventListener('resize', handleResize);
-//         return () => window.removeEventListener('resize', handleResize);
-//     }, []);
+  const { data: adminsData, isLoading } = useGetAllAdminsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
+  const [deleteAdmin] = useDeleteAdminMutation();
 
-//     if (isLoading) return <Loader />;
+  // RTK Query response safety & optimized filtering
+  const filteredAdmins = useMemo(() => {
+    const rawData = Array.isArray(adminsData)
+      ? adminsData
+      : (adminsData as any)?.data || (adminsData as any)?.result || [];
 
-//     // delete admin
-//     const handleDelete = async (admin: Admin) => {
-//         Swal.fire({
-//             title: "Delete Admin Account",
-//             text: `Are you sure you want to delete ${admin.name}'s account? This action cannot be undone.`,
-//             icon: "warning",
-//             showCancelButton: true,
-//             confirmButtonText: "Delete",
-//             cancelButtonText: "Cancel",
-//             confirmButtonColor: "#dc2626",
-//             cancelButtonColor: "#6b7280",
-//             customClass: {
-//                 popup: "rounded-xl",
-//                 title: "text-xl font-semibold text-gray-900",
-//                 htmlContainer: "text-gray-600",
-//                 confirmButton: "px-4 py-2 text-sm font-medium rounded-lg",
-//                 cancelButton: "px-4 py-2 text-sm font-medium rounded-lg"
-//             }
-//         }).then(async (result) => {
-//             if (result.isConfirmed) {
-//                 try {
-//                     await deleteAdmin(admin._id).unwrap();
-//                     // Success notification
-//                     Swal.fire({
-//                         title: "Account Deleted",
-//                         text: `${admin.name}'s account has been successfully deleted.`,
-//                         icon: "success",
-//                         confirmButtonColor: "#3b82f6",
-//                         customClass: {
-//                             popup: "rounded-xl",
-//                             title: "text-xl font-semibold text-gray-900",
-//                             htmlContainer: "text-gray-600",
-//                             confirmButton: "px-4 py-2 text-sm font-medium rounded-lg"
-//                         }
-//                     });
+    const query = searchTerm.toLowerCase().trim();
+    if (!query) return rawData;
 
-//                 } catch (error: any) {
-//                     console.error("Delete mutation failed:", error);
-//                     // Safely access the error message
-//                     const errorMessage = error?.data?.message || 'An error occurred while deleting the admin.';
-//                     Swal.fire({
-//                         title: "Error",
-//                         text: errorMessage,
-//                         icon: "error"
-//                     });
-//                 }
-//             } else {
-//                 Swal.fire({
-//                     title: "Cancelled",
-//                     text: "The admin account was not deleted.",
-//                     icon: "error"
-//                 });
-//             }
-//         });
-//     };
+    return rawData.filter(
+      (admin: Admin) =>
+        admin.name?.toLowerCase().includes(query) ||
+        admin.email?.toLowerCase().includes(query),
+    );
+  }, [adminsData, searchTerm]);
 
+  // SweetAlert Dark Theme Delete Modal
+  const handleDelete = async (admin: Admin) => {
+    const result = await Swal.fire({
+      title: "Delete Admin Account?",
+      text: `Are you sure you want to revoke access for ${admin.name}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Delete",
+      cancelButtonText: "Cancel",
+      background: "#0f172a", // slate-900
+      color: "#f8fafc", // slate-50
+      confirmButtonColor: "#f97316", // orange-500
+      cancelButtonColor: "#334155", // slate-700
+      customClass: {
+        popup:
+          "rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-xl",
+        title: "text-xl font-black text-white",
+        htmlContainer: "text-slate-400 text-sm",
+        confirmButton: "px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg",
+        cancelButton: "px-5 py-2.5 rounded-xl font-bold text-sm",
+      },
+    });
 
+    if (result.isConfirmed) {
+      try {
+        await deleteAdmin(admin._id).unwrap();
+        Swal.fire({
+          title: "Account Removed",
+          text: `${admin.name}'s account has been successfully deleted.`,
+          icon: "success",
+          background: "#0f172a",
+          color: "#f8fafc",
+          confirmButtonColor: "#f59e0b",
+          customClass: {
+            popup: "rounded-3xl border border-slate-800 shadow-2xl",
+            title: "text-xl font-black text-white",
+            htmlContainer: "text-slate-400 text-sm",
+            confirmButton: "px-5 py-2.5 rounded-xl font-bold text-sm",
+          },
+        });
+      } catch (error: any) {
+        const errorMessage =
+          error?.data?.message || "An error occurred while deleting the admin.";
+        Swal.fire({
+          title: "Action Failed",
+          text: errorMessage,
+          icon: "error",
+          background: "#0f172a",
+          color: "#f8fafc",
+          confirmButtonColor: "#ef4444",
+          customClass: {
+            popup: "rounded-3xl border border-slate-800 shadow-2xl",
+            title: "text-xl font-black text-white",
+            htmlContainer: "text-slate-400 text-sm",
+          },
+        });
+      }
+    }
+  };
 
+  if (isLoading) return <Loader />;
 
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 selection:bg-amber-500 selection:text-slate-950">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-6 rounded-3xl border border-slate-800 backdrop-blur-xl shadow-2xl">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold uppercase tracking-wider mb-2">
+              <FiShield className="w-3.5 h-3.5" />
+              Staff Privileges
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              All Administrators
+            </h1>
+            <p className="mt-1 text-xs sm:text-sm text-slate-400">
+              Manage permissions, roles, and administrative accounts
+            </p>
+          </div>
 
-//     const containerVariants = {
-//         hidden: { opacity: 0 },
-//         visible: {
-//             opacity: 1,
-//             transition: {
-//                 staggerChildren: 0.1,
-//                 duration: 0.3
-//             }
-//         }
-//     };
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* Search Bar */}
+            <div className="relative min-w-[260px]">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                <FiSearch className="w-4 h-4" />
+              </div>
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search administrator..."
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-950/60 border border-slate-800 rounded-2xl text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/80 transition-all"
+              />
+            </div>
 
-//     const itemVariants = {
-//         hidden: { opacity: 0, y: 20 },
-//         visible: {
-//             opacity: 1,
-//             y: 0,
-//             transition: {
-//                 duration: 0.5
-//             }
-//         }
-//     };
+            {/* Add New Button */}
+            <Link to="/dashboard/admin/create-admin">
+              <motion.button
+                whileTap={{ scale: 0.96 }}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-extrabold px-5 py-2.5 rounded-2xl shadow-lg shadow-amber-500/20 active:scale-95 transition-all text-sm cursor-pointer"
+              >
+                <FiUserPlus className="w-4 h-4" />
+                <span>Add New Admin</span>
+              </motion.button>
+            </Link>
+          </div>
+        </div>
 
-//     // Mobile Layout
-//     const MobileLayout = () => (
-//         <div className="space-y-4 bg-gray-50 min-h-screen">
-//             <div className="sticky top-0 bg-white z-10 p-4 shadow-md">
-//                 <div className="flex items-center justify-between mb-4">
-//                     <h1 className="text-xl font-bold text-gray-900">All Administrators</h1>
-//                     <button className="p-2 rounded-full bg-blue-50 text-blue-600">
-//                         <FiEdit2 className="h-5 w-5" />
-//                     </button>
-//                 </div>
-//                 <div className="relative">
-//                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-//                         <FiSearch className="h-5 w-5 text-gray-400" />
-//                     </div>
-//                     <input
-//                         type="search"
-//                         value={searchTerm}
-//                         onChange={(e) => setSearchTerm(e.target.value)}
-//                         placeholder="Search by name or email..."
-//                         className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        {/* Content Section */}
+        {filteredAdmins.length === 0 ? (
+          <div className="bg-slate-900/40 rounded-3xl p-12 border border-slate-800/80 text-center">
+            <FiShield className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+            <h3 className="text-lg font-bold text-slate-300">
+              No Administrators Found
+            </h3>
+            <p className="text-sm text-slate-500 mt-1">
+              Try adjusting your search query or add a new admin account.
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Desktop View (Tables) */}
+            <div className="hidden md:block bg-slate-900/80 rounded-3xl border border-slate-800 shadow-2xl overflow-hidden backdrop-blur-xl">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-800 bg-slate-950/40 text-xs font-bold uppercase tracking-wider text-slate-400">
+                      <th className="px-6 py-4">Administrator</th>
+                      <th className="px-6 py-4">Role</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <motion.tbody
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="divide-y divide-slate-800/60 text-sm"
+                  >
+                    <AnimatePresence>
+                      {filteredAdmins.map((admin: Admin) => (
+                        <motion.tr
+                          key={admin._id}
+                          variants={itemVariants}
+                          exit="exit"
+                          layout
+                          className="hover:bg-slate-800/30 transition-colors group"
+                        >
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3.5">
+                              {admin.avatar ? (
+                                <img
+                                  src={admin.avatar}
+                                  alt={admin.name}
+                                  className="w-10 h-10 rounded-xl object-cover border border-slate-700"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-black text-base">
+                                  {admin.name?.charAt(0).toUpperCase() || "A"}
+                                </div>
+                              )}
+                              <div>
+                                <div className="font-bold text-slate-100 group-hover:text-amber-400 transition-colors">
+                                  {admin.name}
+                                </div>
+                                <div className="text-xs text-slate-400">
+                                  {admin.email}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                              <FiShield className="w-3 h-3" />
+                              {admin.role || "Admin"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              <FiUserCheck className="w-3 h-3" />
+                              {admin.status || "Active"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Link
+                                to={`/dashboard/admin/admin-info/${admin._id}`}
+                                className="p-2 text-slate-400 hover:text-amber-400 hover:bg-slate-800 rounded-xl transition-all"
+                                title="View Details"
+                              >
+                                <FiEye className="w-4 h-4" />
+                              </Link>
+                              <button
+                                onClick={() => handleDelete(admin)}
+                                className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-xl transition-all cursor-pointer"
+                                title="Delete Admin"
+                              >
+                                <FiTrash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </AnimatePresence>
+                  </motion.tbody>
+                </table>
+              </div>
+            </div>
 
-//                     />
-//                 </div>
-//             </div>
+            {/* Mobile View (Cards) */}
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-1 gap-4 md:hidden"
+            >
+              <AnimatePresence>
+                {filteredAdmins.map((admin: Admin) => (
+                  <motion.div
+                    key={admin._id}
+                    variants={itemVariants}
+                    exit="exit"
+                    layout
+                    className="bg-slate-900/80 rounded-3xl p-5 border border-slate-800 backdrop-blur-xl shadow-lg space-y-4"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        {admin.avatar ? (
+                          <img
+                            src={admin.avatar}
+                            alt={admin.name}
+                            className="w-12 h-12 rounded-2xl object-cover border border-slate-700"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-black text-lg">
+                            {admin.name?.charAt(0).toUpperCase() || "A"}
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="font-bold text-white text-base">
+                            {admin.name}
+                          </h3>
+                          <p className="text-xs text-slate-400 truncate max-w-[180px]">
+                            {admin.email}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
-//             <motion.div
-//                 variants={containerVariants}
-//                 initial="hidden"
-//                 animate="visible"
-//                 className="px-4 pb-4 space-y-3"
-//             >
-//                 {filteredAdmins && filteredAdmins.map((admin: Admin) => (
-//                     <motion.div
-//                         key={admin._id}
-//                         variants={itemVariants}
-//                         className="bg-white rounded-xl shadow-sm overflow-hidden"
-//                     >
-//                         <div className="p-4">
-//                             <div className="flex items-center space-x-4">
-//                                 <img
-//                                     className="h-14 w-14 rounded-full border-2 border-gray-200"
-//                                     src={admin.avatar || "https://via.placeholder.com/40"}
-//                                     alt={admin.name}
-//                                 />
-//                                 <div className="flex-1 min-w-0">
-//                                     <h2 className="text-base font-semibold text-gray-900 truncate">{admin.name}</h2>
-//                                     <p className="text-sm text-gray-500 truncate">{admin.email}</p>
-//                                     <div className="mt-2 flex flex-wrap gap-2">
-//                                         <span className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-//                                             {admin.role || 'Admin'}
-//                                         </span>
-//                                         <span className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800">
-//                                             {admin.status || 'Active'}
-//                                         </span>
-//                                     </div>
-//                                 </div>
-//                             </div>
+                    <div className="flex items-center gap-2 pt-1">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        {admin.role || "Admin"}
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        {admin.status || "Active"}
+                      </span>
+                    </div>
 
-//                             <div className="mt-4 flex items-center justify-end space-x-3 border-t pt-4">
-//                                 <Link
-//                                     to={`/dashboard/admin/${admin._id}`}
-//                                     className="flex items-center justify-center p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-//                                 >
-//                                     <FiEye className="h-5 w-5" />
-//                                     <span className="ml-2 text-sm font-medium">View</span>
-//                                 </Link>
-//                                 <button
-//                                     className="flex items-center justify-center p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-//                                 >
-//                                     <FiEdit2 className="h-5 w-5" />
-//                                     <span className="ml-2 text-sm font-medium">Edit</span>
-//                                 </button>
-//                                 <button
-//                                     onClick={() => handleDelete(admin)}
-//                                     className="flex items-center justify-center p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-//                                 >
-//                                     <FiTrash2 className="h-5 w-5" />
-//                                     <span className="ml-2 text-sm font-medium">Delete</span>
-//                                 </button>
-//                             </div>
-//                         </div>
-//                     </motion.div>
-//                 ))}
-//             </motion.div>
-//         </div>
-//     );
+                    <div className="flex items-center justify-end gap-2 border-t border-slate-800/80 pt-3">
+                      <Link
+                        to={`/dashboard/admin/admin-info/${admin._id}`}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold text-slate-300 bg-slate-950/60 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all"
+                      >
+                        <FiEye className="w-3.5 h-3.5 text-amber-400" />
+                        View Info
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(admin)}
+                        className="p-2 text-rose-400 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 rounded-xl transition-all cursor-pointer"
+                        title="Delete Admin"
+                      >
+                        <FiTrash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
 
-//     // Desktop Layout
-//     const DesktopLayout = () => (
-//         <div className="p-8">
-//             <div className="flex items-center justify-between mb-8">
-//                 <div>
-//                     <h1 className="text-3xl font-bold text-gray-900">All Administrators</h1>
-//                     <p className="mt-1 text-sm text-gray-500">Manage and monitor admin accounts</p>
-//                 </div>
-
-//                 <div className="flex items-center gap-4">
-//                     <div className="w-80">
-//                         <div className="relative">
-//                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-//                                 <FiSearch className="h-5 w-5 text-gray-400" />
-//                             </div>
-
-//                             <input
-//                                 type="search"
-//                                 value={searchTerm}
-//                                 onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
-//                                 placeholder="Search by name or email..."
-//                                 className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-//                             />
-
-//                         </div>
-//                     </div>
-
-//                     <Link to="/dashboard/admin/create-admin">
-//                         <button className="inline-flex items-center px-4 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-//                             <span className="mr-2 cursor-pointer">Add New Admin</span>
-//                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-//                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-//                             </svg>
-//                         </button>
-//                     </Link>
-//                 </div>
-//             </div>
-
-//             <motion.div
-//                 variants={containerVariants}
-//                 initial="hidden"
-//                 animate="visible"
-//                 className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200"
-//             >
-//                 <table className="min-w-full divide-y divide-gray-200">
-//                     <thead className="bg-gray-50">
-//                         <tr>
-//                             <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Admin Info</th>
-//                             <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
-//                             <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-//                             <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
-//                         </tr>
-//                     </thead>
-//                     <tbody className="bg-white divide-y divide-gray-200">
-//                         <AnimatePresence>
-//                             {filteredAdmins && filteredAdmins?.map((admin: Admin) => (
-//                                 <motion.tr
-//                                     key={admin._id}
-//                                     variants={itemVariants}
-//                                     className="hover:bg-gray-50 transition-colors"
-//                                 >
-//                                     <td className="px-6 py-4 whitespace-nowrap">
-//                                         <div className="flex items-center">
-//                                             <svg
-//                                                 className="h-12 w-12 rounded-full bg-gray-200 p-2 text-gray-600"
-//                                                 fill="none"
-//                                                 stroke="currentColor"
-//                                                 viewBox="0 0 24 24"
-//                                                 xmlns="http://www.w3.org/2000/svg"
-//                                             >
-//                                                 <path
-//                                                     strokeLinecap="round"
-//                                                     strokeLinejoin="round" 
-//                                                     strokeWidth={2}
-//                                                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-//                                                 />
-//                                             </svg>
-//                                             <div className="ml-4">
-//                                                 <div className="text-sm font-semibold text-gray-900">{admin.name}</div>
-//                                                 <div className="text-sm text-gray-500">{admin.email}</div>
-//                                             </div>
-//                                         </div>
-//                                     </td>
-//                                     <td className="px-6 py-4 whitespace-nowrap">
-//                                         <span className="px-3 py-1 inline-flex text-sm font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-//                                             {admin.role || 'Admin'}
-//                                         </span>
-//                                     </td>
-//                                     <td className="px-6 py-4 whitespace-nowrap">
-//                                         <span className="px-3 py-1 inline-flex text-sm font-medium rounded-full bg-green-50 text-green-700 border border-green-200">
-//                                             {admin.status}
-//                                         </span>
-//                                     </td>
-//                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-//                                         <div className="flex items-center justify-end space-x-3">
-//                                             <Link
-//                                                 to={`/dashboard/admin/admin-info/${admin._id}`}
-//                                                 className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors"
-//                                                 title="View Details"
-//                                             >
-//                                                 <FiEye className="h-5 w-5" />
-//                                             </Link>
-//                                             <button
-//                                                 className="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
-//                                                 title="Edit Admin"
-//                                             >
-//                                                 <FiEdit2 className="h-5 w-5" />
-//                                             </button>
-//                                             <button
-//                                                 onClick={() => handleDelete(admin)}
-//                                                 className="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-//                                                 title="Delete Admin"
-//                                             >
-//                                                 <FiTrash2 className="h-5 w-5" />
-//                                             </button>
-//                                         </div>
-//                                     </td>
-//                                 </motion.tr>
-//                             ))}
-//                         </AnimatePresence>
-//                     </tbody>
-//                 </table>
-//             </motion.div>
-//         </div>
-//     );
-
-//     return isMobile ? <MobileLayout /> : <DesktopLayout />;
-// };
-
-// export default AllAdmin;
+export default AllAdmin;
