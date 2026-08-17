@@ -7,10 +7,11 @@ import { persistor, store } from './Redux/store';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { Toaster } from 'sonner';
+import Preloader from './utils/Preloader';
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider store={store}>
-    <PersistGate loading={null} persistor={persistor}>
+    <PersistGate loading={<Preloader />} persistor={persistor}>
       <RouterProvider router={router} />
       </PersistGate>
       <Toaster />
