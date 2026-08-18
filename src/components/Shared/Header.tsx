@@ -36,7 +36,7 @@ const Header = () => {
   // Check if the user is an admin or superadmin (case-insensitive check)
   const isAdminOrSuperAdmin =
     user?.role?.toLowerCase() === "admin" ||
-    user?.role?.toLowerCase() === "superadmin";
+    user?.role?.toLowerCase() === "superAdmin";
 
   // Handle Navbar Background Change on Scroll
   useEffect(() => {

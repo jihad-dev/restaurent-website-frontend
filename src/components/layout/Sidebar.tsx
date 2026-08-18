@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Package,
@@ -15,11 +16,13 @@ import {
   UsersRound,
   Ticket,
   Star,
-  Settings,
   LogOut,
   UserCheck,
+  User,
 } from "lucide-react";
 import { useGetAllOrdersQuery } from "../../Redux/features/order/orderApi";
+import { useAppDispatch, useAppSelector } from "../../Redux/hooks";
+import { logout } from "../../Redux/features/auth/authSlice";
 
 interface ChildNavItem {
   to: string;
@@ -48,7 +51,6 @@ interface SidebarLinkProps {
   children?: ChildNavItem[];
 }
 
-
 const SidebarLink: React.FC<SidebarLinkProps> = ({
   to,
   icon,
@@ -59,7 +61,7 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
 }) => {
   const location = useLocation();
   const hasChildren = children && children.length > 0;
-
+  
   const isAnyChildActive =
     hasChildren && children.some((child) => location.pathname === child.to);
 
@@ -155,11 +157,20 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
   const location = useLocation();
-
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   // RTK Query call
   const { data: responseData } = useGetAllOrdersQuery(undefined);
-  const count = responseData?.data?.length
-// TODO
+  const user = useAppSelector((state) => state.auth.user);
+  const pendingOrders = responseData?.data?.filter((order: any) => {
+    const status = order?.status?.toLowerCase();
+    return status === "pending" || status === "processing";
+  });
+
+  const pendingCount = pendingOrders?.length ?? 0;
+
+  console.log("Pending Orders Count:", pendingCount);
+  // TODO
   const navigationGroups: NavGroup[] = [
     {
       groupLabel: "Main Menu",
@@ -173,7 +184,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
           to: "/dashboard/orders",
           icon: <ShoppingCart size={18} />,
           label: "Kitchen Orders",
-          badge: count > 0 ? count : undefined,
+          badge: pendingCount > 0 ? pendingCount : undefined,
         },
       ],
     },
@@ -244,11 +255,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
       groupLabel: "System",
       items: [
         {
-          to: "/dashboard/settings",
-          icon: <Settings size={18} />,
-          label: "Settings",
-        },
-        {
           to: "/",
           icon: <Home size={18} />,
           label: "Public Home",
@@ -284,25 +290,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
     <div className="p-3.5 border-t border-slate-800/80 bg-slate-950/40 flex items-center justify-between">
       <div className="flex items-center gap-3">
         <div className="relative">
-          <img
-            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop"
-            alt="Admin Avatar"
-            className="w-9 h-9 rounded-xl object-cover ring-2 ring-amber-500/20"
-          />
-          <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-slate-900" />
+          {/* Premium Styled Avatar Icon Wrapper */}
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500/20 via-slate-800 to-slate-800 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-sm shadow-amber-500/10">
+            <User size={18} className="text-amber-400" />
+          </div>
+          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-slate-900" />
         </div>
-        <div className="flex flex-col">
-          <span className="text-xs font-bold text-slate-100">
-            Jihadul Islam
+        <div className="flex flex-col min-w-0">
+          <span className="text-xs font-bold text-slate-100 truncate">
+            {user?.email}
           </span>
-          <span className="text-[10px] font-medium text-amber-400">
-            Super Admin
+          <span className="capitalize text-[10px] font-medium text-amber-400">
+            {user?.role}
           </span>
         </div>
       </div>
       <button
+        onClick={() => {
+          dispatch(logout());
+          navigate("/login");
+        }}
         title="Logout"
-        className="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+        className="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
       >
         <LogOut size={16} />
       </button>

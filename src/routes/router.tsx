@@ -1,48 +1,42 @@
+
+import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
+
+// Layouts & Static Page Imports
 import MainLayout from "../components/layout/Mainlayout";
 import Home from "../Pages/Home/Home/Home";
 import Error from "../Pages/Error/Error";
 import Login from "../Pages/Login/Login";
 import Register from "../Pages/Register/Register";
-// import Products from "../Pages/FoodItems/FoodItems";
-// import Dashboard from "../components/layout/Dashboard";
-// import AdminHome from "../Pages/AdminPage/AdminHome";
-// import Customers from "../Pages/AdminPage/Customers";
 import PrivateRoute from "../utils/PrivateRoute";
 import Profile from "../Pages/Profile/Profile";
-// import DynamicCategory from "../utils/DynamicCategory";
 import Cart from "../Pages/Cart/Cart";
-// import ViewUserInfo from "../Pages/AdminPage/ViewUserInfo";
-// import ChangeStatus from "../Pages/AdminPage/ChangeStatus";
-// // import AllProducts from "../Pages/AdminPage/AllProducts";
-// import AllAdmin from "../Pages/AdminPage/AllAdmin";
-// import CreateAdmin from "../Pages/AdminPage/CreateAdmin";
-// import ViewAdminInfo from "../Pages/AdminPage/ViewAdminInfo";
-// // import AddProduct from "../Pages/AdminPage/AddProduct";
-// import ViewProductFullDetails from "../Pages/AdminPage/ViewProductFullDetails";
-// // import AllCategories from "../Pages/AdminPage/AllCategories";
-// import ViewAllOrders from "../Pages/AdminPage/ViewAllOrders";
-// import AddCategories from "../Pages/AdminPage/AddCategories";
-// import ProductDetails from "../Pages/FoodItems/ProductDetails";
 import Unauthorized from "../utils/Unauthorized";
 import Order from "../Pages/Order/Order";
 import MyOrder from "../Pages/My-order/My-order";
 import About from "../Pages/About/About";
 import Contact from "../Pages/Contact/Contact";
 import FoodItems from "../Pages/FoodItems/FoodItems";
-import Dashboard from "../components/layout/Dashboard";
-import AdminHome from "../Pages/AdminPage/AdminHome";
-import ViewAllOrders from "../Pages/AdminPage/ViewAllOrders";
-import AllFoods from "../Pages/AdminPage/AllProducts";
-import ViewProductFullDetails from "../Pages/AdminPage/ViewProductFullDetails";
-import AddItemsForm from "../Pages/AdminPage/AddProduct";
-import AllCategories from "../Pages/AdminPage/AllCategories";
 import PaymentSuccess from "../utils/PaymentSuccess";
-import SalesAnalytics from "../Pages/AdminPage/SalesAnalytics";
-import AddCategories from "../Pages/AdminPage/AddCategories";
-import Customers from "../Pages/AdminPage/Customers";
-import CreateAdmin from "../Pages/AdminPage/CreateAdmin";
-import AllAdmin from './../Pages/AdminPage/AllAdmin';
+import Preloader from "../utils/Preloader";
+
+// Lazy Loaded Dashboard Components
+const Dashboard = lazy(() => import("../components/layout/Dashboard"));
+const AdminHome = lazy(() => import("../Pages/AdminPage/AdminHome"));
+const ViewAllOrders = lazy(() => import("../Pages/AdminPage/ViewAllOrders"));
+const AllFoods = lazy(() => import("../Pages/AdminPage/AllProducts"));
+const ViewProductFullDetails = lazy(
+  () => import("../Pages/AdminPage/ViewProductFullDetails"),
+);
+const AddItemsForm = lazy(() => import("../Pages/AdminPage/AddProduct"));
+const AllCategories = lazy(() => import("../Pages/AdminPage/AllCategories"));
+const SalesAnalytics = lazy(() => import("../Pages/AdminPage/SalesAnalytics"));
+const AddCategories = lazy(() => import("../Pages/AdminPage/AddCategories"));
+const Customers = lazy(() => import("../Pages/AdminPage/Customers"));
+const CreateAdmin = lazy(() => import("../Pages/AdminPage/CreateAdmin"));
+const AllAdmin = lazy(() => import("./../Pages/AdminPage/AllAdmin"));
+
+
 
 export const router = createBrowserRouter([
   {
@@ -69,15 +63,11 @@ export const router = createBrowserRouter([
       {
         path: "/profile",
         element: (
-          <PrivateRoute allowedRoles={["admin", "superAdmin","user"]}>
+          <PrivateRoute allowedRoles={["admin", "superAdmin", "user"]}>
             <Profile />
           </PrivateRoute>
         ),
       },
-      // {
-      //   path: "/category/:category",
-      //   element: <DynamicCategory />,
-      // },
       {
         path: "/cart",
         element: <Cart />,
@@ -100,7 +90,9 @@ export const router = createBrowserRouter([
     path: "/dashboard",
     element: (
       <PrivateRoute allowedRoles={["admin", "superAdmin"]}>
-        <Dashboard />
+        <Suspense fallback={<Preloader />}>
+          <Dashboard />
+        </Suspense>
       </PrivateRoute>
     ),
     children: [
@@ -108,7 +100,9 @@ export const router = createBrowserRouter([
         path: "/dashboard/admin-home",
         element: (
           <PrivateRoute allowedRoles={["admin", "superAdmin"]}>
-            <AdminHome />
+            <Suspense fallback={<Preloader />}>
+              <AdminHome />
+            </Suspense>
           </PrivateRoute>
         ),
       },
@@ -116,63 +110,49 @@ export const router = createBrowserRouter([
         path: "/dashboard/all-items",
         element: (
           <PrivateRoute allowedRoles={["admin", "superAdmin"]}>
-            <AllFoods />
+            <Suspense fallback={<Preloader />}>
+              <AllFoods />
+            </Suspense>
           </PrivateRoute>
         ),
       },
       {
         path: "/dashboard/customers",
         element: (
-          <PrivateRoute allowedRoles={["admin","superAdmin"]}>
-            <Customers />
+          <PrivateRoute allowedRoles={["admin", "superAdmin"]}>
+            <Suspense fallback={<Preloader />}>
+              <Customers />
+            </Suspense>
           </PrivateRoute>
         ),
       },
-      // {
-      //   path: "/dashboard/customers/:id",
-      //   element: (
-      //     <PrivateRoute allowedRoles={["admin"]}>
-      //       <ViewUserInfo />
-      //     </PrivateRoute>
-      //   ),
-      // },
-      // {
-      //   path: "/dashboard/customers/change-status/:id",
-      //   element: (
-      //     <PrivateRoute allowedRoles={["admin"]}>
-      //       <ChangeStatus />
-      //     </PrivateRoute>
-      //   ),
-      // },
       {
         path: "/dashboard/all-admin",
         element: (
-          <PrivateRoute allowedRoles={["admin","superAdmin"]}>
-            <AllAdmin />
+          <PrivateRoute allowedRoles={["admin", "superAdmin"]}>
+            <Suspense fallback={<Preloader />}>
+              <AllAdmin />
+            </Suspense>
           </PrivateRoute>
         ),
       },
       {
         path: "/dashboard/admin/create-admin",
         element: (
-          <PrivateRoute allowedRoles={["admin","superAdmin"]}>
-            <CreateAdmin />
+          <PrivateRoute allowedRoles={["admin", "superAdmin"]}>
+            <Suspense fallback={<Preloader />}>
+              <CreateAdmin />
+            </Suspense>
           </PrivateRoute>
         ),
       },
-      // {
-      //   path: "/dashboard/admin/admin-info/:id",
-      //   element: (
-      //     <PrivateRoute allowedRoles={["admin"]}>
-      //       <ViewAdminInfo />
-      //     </PrivateRoute>
-      //   ),
-      // },
       {
         path: "/dashboard/items/add-item",
         element: (
           <PrivateRoute allowedRoles={["admin", "superAdmin"]}>
-            <AddItemsForm />
+            <Suspense fallback={<Preloader />}>
+              <AddItemsForm />
+            </Suspense>
           </PrivateRoute>
         ),
       },
@@ -180,7 +160,9 @@ export const router = createBrowserRouter([
         path: "/dashboard/items/view-item/:id",
         element: (
           <PrivateRoute allowedRoles={["admin", "superAdmin"]}>
-            <ViewProductFullDetails />
+            <Suspense fallback={<Preloader />}>
+              <ViewProductFullDetails />
+            </Suspense>
           </PrivateRoute>
         ),
       },
@@ -188,24 +170,29 @@ export const router = createBrowserRouter([
         path: "/dashboard/categories",
         element: (
           <PrivateRoute allowedRoles={["admin", "superAdmin"]}>
-            <AllCategories />
+            <Suspense fallback={<Preloader />}>
+              <AllCategories />
+            </Suspense>
           </PrivateRoute>
         ),
       },
       {
         path: "/dashboard/categories/add-category",
         element: (
-          <PrivateRoute allowedRoles={["admin","superAdmin"]}>
-            <AddCategories />
+          <PrivateRoute allowedRoles={["admin", "superAdmin"]}>
+            <Suspense fallback={<Preloader />}>
+              <AddCategories />
+            </Suspense>
           </PrivateRoute>
         ),
       },
-
       {
         path: "/dashboard/orders",
         element: (
           <PrivateRoute allowedRoles={["admin", "superAdmin"]}>
-            <ViewAllOrders />
+            <Suspense fallback={<Preloader />}>
+              <ViewAllOrders />
+            </Suspense>
           </PrivateRoute>
         ),
       },
@@ -213,7 +200,9 @@ export const router = createBrowserRouter([
         path: "/dashboard/sales-analytics",
         element: (
           <PrivateRoute allowedRoles={["admin", "superAdmin"]}>
-            <SalesAnalytics />
+            <Suspense fallback={<Preloader />}>
+              <SalesAnalytics />
+            </Suspense>
           </PrivateRoute>
         ),
       },
@@ -223,10 +212,6 @@ export const router = createBrowserRouter([
     path: "/unauthorized",
     element: <Unauthorized />,
   },
-  // {
-  //   path: "/product/:id",
-  //   element: <ProductDetails />,
-  // },
   {
     path: "/order",
     element: <Order />,

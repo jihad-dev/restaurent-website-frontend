@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useTransition, useMemo } from "react";
 import {
@@ -33,7 +34,7 @@ const ViewAllOrders = () => {
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
   const [, startTransition] = useTransition();
 
-  // ⚡ Auto Polling & Focus Refetch
+  // ⚡ Auto Polling & Focus Refetch with typed arguments
   const {
     data: ordersData,
     isLoading,
@@ -49,21 +50,21 @@ const ViewAllOrders = () => {
       searchTerm: debouncedSearch,
     },
     {
-      pollingInterval: 15000, // ৩ সেকেন্ড পর পর নতুন অর্ডারের জন্য অটোমেটিক রিফেচ করবে
+      pollingInterval: 15000,
       refetchOnMountOrArgChange: true,
       refetchOnFocus: true,
       refetchOnReconnect: true,
     },
-  ) as any;
-  console.log(ordersData, "ord");
+  );
+
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
 
-  // Extract raw orders
+  // Extract raw orders from API response
   const rawOrders: any[] = useMemo(() => {
     return ordersData?.data?.result || ordersData?.data || [];
   }, [ordersData]);
 
-  // ⚡ 1. Newest Orders First (তারিখ অনুযায়ী সবার নতুনটি উপরে প্রদর্শন করবে)
+  // ⚡ 1. Newest Orders First
   const sortedRawOrders = useMemo(() => {
     return [...rawOrders].sort((a, b) => {
       const dateA = new Date(a.createdAt || 0).getTime();
@@ -72,10 +73,57 @@ const ViewAllOrders = () => {
     });
   }, [rawOrders]);
 
-  // ⚡ 2. Tab Count Calculation (প্রতিটি ট্যাবের বিপরীতে অর্ডারের সংখ্যা গণনা)
+  // ⚡ 2. Multi-Field Client-Side Search Filter (Customer Name, Dish Title, Phone, Txn, ID)
+  const searchFilteredOrders = useMemo(() => {
+    if (!debouncedSearch.trim()) return sortedRawOrders;
+
+    const term = debouncedSearch.toLowerCase().trim();
+
+    return sortedRawOrders.filter((order: any) => {
+      // Customer Name & Phone
+      const userName = order?.userId?.name?.toLowerCase() || "";
+      const phone =
+        order?.shippingInfo?.phone?.toLowerCase() ||
+        order?.phone?.toLowerCase() ||
+        "";
+
+      // Transaction ID & Order ID
+      const txnId = order?.paymentInfo?.transactionId?.toLowerCase() || "";
+      const orderId = order?._id?.toLowerCase() || "";
+
+      // Shipping Address Info
+      const city = order?.shippingInfo?.city?.toLowerCase() || "";
+      const address = order?.shippingInfo?.address?.toLowerCase() || "";
+
+      // Food / Item Titles
+      const itemMatch = order?.orderItems?.some((item: any) =>
+        item?.food?.name?.toLowerCase().includes(term),
+      );
+
+      return (
+        userName.includes(term) ||
+        phone.includes(term) ||
+        txnId.includes(term) ||
+        orderId.includes(term) ||
+        city.includes(term) ||
+        address.includes(term) ||
+        itemMatch
+      );
+    });
+  }, [sortedRawOrders, debouncedSearch]);
+
+  // ⚡ 3. Status Tab Filter
+  const filteredOrders = useMemo(() => {
+    return searchFilteredOrders.filter((order: any) => {
+      if (activeTab === "All") return true;
+      return order?.status?.toLowerCase() === activeTab.toLowerCase();
+    });
+  }, [searchFilteredOrders, activeTab]);
+
+  // ⚡ 4. Tab Count Calculation (Reflects current search query)
   const tabCounts = useMemo(() => {
     const counts: Record<string, number> = {
-      All: sortedRawOrders.length,
+      All: searchFilteredOrders.length,
       Pending: 0,
       Processing: 0,
       Shipped: 0,
@@ -83,7 +131,7 @@ const ViewAllOrders = () => {
       Cancelled: 0,
     };
 
-    sortedRawOrders.forEach((order) => {
+    searchFilteredOrders.forEach((order) => {
       const status = order?.status?.toLowerCase();
       if (status === "pending") counts.Pending++;
       else if (status === "processing") counts.Processing++;
@@ -93,20 +141,12 @@ const ViewAllOrders = () => {
     });
 
     return counts;
-  }, [sortedRawOrders]);
-
-  // Client-side Safety Filter
-  const orders = useMemo(() => {
-    return sortedRawOrders.filter((order: any) => {
-      if (activeTab === "All") return true;
-      return order?.status?.toLowerCase() === activeTab.toLowerCase();
-    });
-  }, [sortedRawOrders, activeTab]);
+  }, [searchFilteredOrders]);
 
   const meta = ordersData?.data?.meta || {
-    total: orders.length,
+    total: filteredOrders.length,
     page: 1,
-    totalPage: 1,
+    totalPage: Math.ceil(filteredOrders.length / limit) || 1,
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,7 +164,7 @@ const ViewAllOrders = () => {
   };
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
-    const currentOrder = orders.find((o: any) => o._id === orderId);
+    const currentOrder = filteredOrders.find((o: any) => o._id === orderId);
 
     if (currentOrder?.status?.toLowerCase() === "delivered") {
       toast.error("Delivered orders are final and cannot be modified.");
@@ -233,14 +273,16 @@ const ViewAllOrders = () => {
 
             <div className="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-medium text-slate-400 shadow-inner">
               Total Records:{" "}
-              <span className="font-bold text-amber-400">{orders.length}</span>
+              <span className="font-bold text-amber-400">
+                {filteredOrders.length}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Search Bar & Tabs */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          {/* ⚡ Tab Buttons with Count Indicator Badges */}
+          {/* Tab Buttons with Count Badges */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
             {tabs.map((tab) => {
               const count = tabCounts[tab] || 0;
@@ -257,7 +299,6 @@ const ViewAllOrders = () => {
                   }`}
                 >
                   <span>{tab}</span>
-                  {/* Badge Indicator */}
                   <span
                     className={`px-1.5 py-0.5 text-[10px] rounded-full font-bold transition-all ${
                       isActive
@@ -272,25 +313,26 @@ const ViewAllOrders = () => {
             })}
           </div>
 
-          <div className="relative w-full md:w-72">
+          {/* Search Input */}
+          <div className="relative w-full md:w-80">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <input
               type="text"
               value={searchTerm}
               onChange={handleSearchChange}
-              placeholder="Search phone, Txn or ID..."
+              placeholder="Search by customer, dish, phone, Txn..."
               className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition-all"
             />
           </div>
         </div>
 
-        {/* Error Handling State */}
+        {/* Error State */}
         {isError && (
           <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-6 text-center text-rose-400 space-y-3">
             <AlertTriangle className="w-8 h-8 mx-auto" />
             <h3 className="font-bold text-base">Failed to Load Orders</h3>
             <p className="text-xs text-rose-300">
-              {error?.data?.message ||
+              {(error as any)?.data?.message ||
                 "Network error occurred or server unresponsive."}
             </p>
             <button
@@ -303,7 +345,7 @@ const ViewAllOrders = () => {
         )}
 
         {/* Orders Table Container */}
-        {!isError && orders.length > 0 ? (
+        {!isError && filteredOrders.length > 0 ? (
           <div className="relative rounded-2xl bg-slate-900/90 border border-slate-800/80 shadow-2xl overflow-hidden backdrop-blur-xl">
             {isFetching && (
               <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px] flex items-center justify-center z-10">
@@ -324,7 +366,7 @@ const ViewAllOrders = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
-                  {orders.map((order: any) => {
+                  {filteredOrders.map((order: any) => {
                     const isDelivered =
                       order.status?.toLowerCase() === "delivered";
 
@@ -391,15 +433,14 @@ const ViewAllOrders = () => {
                             ৳{order.totalPrice?.toFixed(2)}
                           </div>
                           <div className="text-[10px] text-slate-500 font-mono">
-                            Txn:{" "}
-                            {order?.paymentInfo?.transactionId}
+                            Txn: {order?.paymentInfo?.transactionId || "N/A"}
                           </div>
                         </td>
 
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-1.5 text-slate-300 font-medium">
                             <CreditCard size={13} className="text-amber-400" />
-                            <span>{order.paymentMethod}</span>
+                            <span>{order.paymentMethod || "COD"}</span>
                           </div>
                           <span
                             className={`inline-block mt-1 text-[10px] font-semibold ${
@@ -479,7 +520,8 @@ const ViewAllOrders = () => {
                 No Orders Found
               </h2>
               <p className="text-sm text-slate-400 max-w-sm mx-auto">
-                No matching order records found for "{activeTab}" tab.
+                No matching order records found for "{activeTab}" tab and search
+                term "{debouncedSearch}".
               </p>
             </div>
           )
