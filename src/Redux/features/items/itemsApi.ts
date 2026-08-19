@@ -40,9 +40,9 @@ const itemsApi = baseApi.injectEndpoints({
         method: "GET",
       }),
       providesTags: ["foods"],
+      // response.data থাকলে সেটা নিবে, না থাকলে পুরো response-ই রিটার্ন করবে
       transformResponse: (response: any) => response?.data,
     }),
-
     // Delete Dish
     deleteFoodItem: builder.mutation({
       query: (id: string) => ({

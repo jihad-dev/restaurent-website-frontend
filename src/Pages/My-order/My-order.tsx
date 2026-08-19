@@ -439,7 +439,11 @@ const MyOrder = () => {
 
                       {isDelivered && (
                         <Link
-                          to={`/review/${order._id}`}
+                          to={`/review/${
+                            typeof order.orderItems?.[0]?.food === "object"
+                              ? order.orderItems[0].food._id
+                              : order.orderItems?.[0]?.food
+                          }`}
                           className="px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-xl font-semibold text-xs transition-all flex items-center gap-1.5"
                         >
                           <Star className="w-4 h-4" /> Give Review

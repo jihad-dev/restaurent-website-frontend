@@ -1,4 +1,3 @@
-
 import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
 
@@ -12,13 +11,14 @@ import PrivateRoute from "../utils/PrivateRoute";
 import Profile from "../Pages/Profile/Profile";
 import Cart from "../Pages/Cart/Cart";
 import Unauthorized from "../utils/Unauthorized";
-import Order from "../Pages/Order/Order";
 import MyOrder from "../Pages/My-order/My-order";
 import About from "../Pages/About/About";
 import Contact from "../Pages/Contact/Contact";
 import FoodItems from "../Pages/FoodItems/FoodItems";
 import PaymentSuccess from "../utils/PaymentSuccess";
 import Preloader from "../utils/Preloader";
+import Review from "../Pages/Review/Review";
+import CheckoutPage from "../Pages/CheckOut/CheckoutPage";
 
 // Lazy Loaded Dashboard Components
 const Dashboard = lazy(() => import("../components/layout/Dashboard"));
@@ -35,8 +35,6 @@ const AddCategories = lazy(() => import("../Pages/AdminPage/AddCategories"));
 const Customers = lazy(() => import("../Pages/AdminPage/Customers"));
 const CreateAdmin = lazy(() => import("../Pages/AdminPage/CreateAdmin"));
 const AllAdmin = lazy(() => import("./../Pages/AdminPage/AllAdmin"));
-
-
 
 export const router = createBrowserRouter([
   {
@@ -70,7 +68,27 @@ export const router = createBrowserRouter([
       },
       {
         path: "/cart",
-        element: <Cart />,
+        element: (
+          <PrivateRoute allowedRoles={["admin", "superAdmin", "user"]}>
+            <Cart />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/review/:id",
+        element: (
+          <PrivateRoute allowedRoles={["admin", "superAdmin", "user"]}>
+            <Review />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/order",
+        element: (
+          <PrivateRoute allowedRoles={["admin", "superAdmin", "user"]}>
+            <CheckoutPage />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/about",
@@ -211,10 +229,6 @@ export const router = createBrowserRouter([
   {
     path: "/unauthorized",
     element: <Unauthorized />,
-  },
-  {
-    path: "/order",
-    element: <Order />,
   },
   {
     path: "/my-order",

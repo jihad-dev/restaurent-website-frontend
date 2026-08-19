@@ -1,7 +1,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, Plus, AlertCircle, RefreshCw, Sparkles } from "lucide-react";
 import Header from "../../../components/Shared/Header";
@@ -40,7 +40,6 @@ export const HomePage: React.FC = () => {
     refetch,
   } = useGetPopularFoodsQuery(undefined);
 
-  console.log(responseData, "responseData");
 
   // Normalize Data safely without type errors
   const foodItems: IFoodItem[] = useMemo(() => {
@@ -56,20 +55,20 @@ export const HomePage: React.FC = () => {
     return [];
   }, [responseData]);
 
-  console.log(foodItems, "fooditems");
+  // console.log(foodItems, "fooditems");
 
-  // Console Log Item IDs whenever items load
-  useEffect(() => {
-    if (foodItems.length > 0) {
-      console.log("--- Food Item IDs ---");
-      foodItems.forEach((item, index) => {
-        const itemId = item._id || item.id;
-        console.log(
-          `Item ${index + 1}: ID = ${itemId}, Name = ${item.name} ${item?.isPopular}`,
-        );
-      });
-    }
-  }, [foodItems]);
+  // // Console Log Item IDs whenever items load
+  // useEffect(() => {
+  //   if (foodItems.length > 0) {
+  //     console.log("--- Food Item IDs ---");
+  //     foodItems.forEach((item, index) => {
+  //       const itemId = item._id || item.id;
+  //       console.log(
+  //         `Item ${index + 1}: ID = ${itemId}, Name = ${item.name} ${item?.isPopular}`,
+  //       );
+  //     });
+  //   }
+  // }, [foodItems]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pb-16 font-sans">

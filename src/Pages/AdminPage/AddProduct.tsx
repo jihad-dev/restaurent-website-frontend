@@ -43,7 +43,7 @@ const AddItemsForm = () => {
     refetchOnFocus: true,
     refetchOnReconnect: true,
   }) as { data?: Category[] };
-  console.log(categories, "catr");
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement

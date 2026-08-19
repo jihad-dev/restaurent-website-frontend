@@ -61,7 +61,7 @@ interface CreateOrderSuccessResponse {
   };
 }
 
-const Order = () => {
+const CheckoutPage = () => {
   const [createOrder, { isLoading: isOrderLoading }] = useCreateOrderMutation();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [clearCart] = useClearCartMutation();
@@ -219,7 +219,7 @@ const Order = () => {
       const res = (await createOrder(
         orderData,
       ).unwrap()) as CreateOrderSuccessResponse;
-
+      console.log(orderData, "orderdata");
       if (selectedPaymentMethodId === "COD") {
         toast.success("Order placed successfully! Fresh food is on the way.", {
           id: toastId,
@@ -626,4 +626,4 @@ const Order = () => {
   );
 };
 
-export default Order;
+export default CheckoutPage;

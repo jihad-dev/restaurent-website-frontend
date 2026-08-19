@@ -7,7 +7,7 @@ const ChangeStatus = () => {
     const { id } = useParams();
     const [status, setStatus] = useState<string>('');
     const [changeStatus, { isLoading }] = useChangeStatusMutation();
-    console.log(id);
+   
     if (isLoading) {
         return <Loader />
     }

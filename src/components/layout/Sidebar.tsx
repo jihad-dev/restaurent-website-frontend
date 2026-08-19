@@ -169,7 +169,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
 
   const pendingCount = pendingOrders?.length ?? 0;
 
-  console.log("Pending Orders Count:", pendingCount);
+  
   // TODO
   const navigationGroups: NavGroup[] = [
     {
