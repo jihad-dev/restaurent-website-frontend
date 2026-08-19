@@ -4,9 +4,9 @@ import { baseApi } from "../../api/baseApi";
 const itemsApi = baseApi.injectEndpoints({
   endpoints: (builder: any) => ({
     // Get Featured Dishes
-    getFeaturedFoods: builder.query({
+    getPopularFoods: builder.query({
       query: () => ({
-        url: "/foods?isFeatured=true",
+        url: "/foods?isPopular=true",
         method: "GET",
       }),
       providesTags: ["foods"],
@@ -67,7 +67,7 @@ const itemsApi = baseApi.injectEndpoints({
 export const {
   useAddFoodItemMutation,
   useGetFoodByIdQuery,
-  useGetFeaturedFoodsQuery,
+  useGetPopularFoodsQuery,
   useGetAllFoodItemsQuery,
   useGetFoodsByCategoryQuery,
   useDeleteFoodItemMutation,

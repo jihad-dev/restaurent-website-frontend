@@ -1,22 +1,12 @@
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Search,
-  Utensils,
-  Pizza,
-  Flame,
-  Clock,
-  Star,
-  Plus,
-  AlertCircle,
-  RefreshCw,
-  Sparkles,
-} from "lucide-react";
+import { Star, Plus, AlertCircle, RefreshCw, Sparkles } from "lucide-react";
 import Header from "../../../components/Shared/Header";
 import { HeroBanner } from "./Banner";
-import { useGetAllFoodItemsQuery } from "../../../Redux/features/items/itemsApi";
+import { useGetPopularFoodsQuery } from "../../../Redux/features/items/itemsApi";
 
 // Food Item Type Definition
 export interface IFoodItem {
@@ -30,36 +20,56 @@ export interface IFoodItem {
   image: string;
   badge?: string;
   description: string;
+  isPopular?: boolean;
+}
+
+// Response Wrapper Type
+interface ApiResponse<T> {
+  success?: boolean;
+  message?: string;
+  data: T;
 }
 
 export const HomePage: React.FC = () => {
-  // Redux Hook for Fetching Real Food Data
+  // Fetch items without any filter/pagination parameters
   const {
     data: responseData,
     isLoading,
     isError,
     error,
     refetch,
-  } = useGetAllFoodItemsQuery(undefined);
+  } = useGetPopularFoodsQuery(undefined);
 
-  // Normalize data depending on API wrapper structure (e.g., res.data or direct array)
-  const foodItems: IFoodItem[] = Array.isArray(responseData)
-    ? responseData
-    : responseData?.data || [];
+  console.log(responseData, "responseData");
 
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  // Normalize Data safely without type errors
+  const foodItems: IFoodItem[] = useMemo(() => {
+    if (!responseData) return [];
+    if (Array.isArray(responseData)) return responseData as IFoodItem[];
 
-  // Search & Category Filter Logic
-  const filteredDishes = foodItems.filter((dish) => {
-    const matchesCategory =
-      selectedCategory === "all" ||
-      dish.category?.toLowerCase() === selectedCategory.toLowerCase();
-    const matchesSearch = dish.name
-      ?.toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+    // Type guard check for .data property
+    if (typeof responseData === "object" && "data" in responseData) {
+      const apiRes = responseData as ApiResponse<IFoodItem[]>;
+      return Array.isArray(apiRes.data) ? apiRes.data : [];
+    }
+
+    return [];
+  }, [responseData]);
+
+  console.log(foodItems, "fooditems");
+
+  // Console Log Item IDs whenever items load
+  useEffect(() => {
+    if (foodItems.length > 0) {
+      console.log("--- Food Item IDs ---");
+      foodItems.forEach((item, index) => {
+        const itemId = item._id || item.id;
+        console.log(
+          `Item ${index + 1}: ID = ${itemId}, Name = ${item.name} ${item?.isPopular}`,
+        );
+      });
+    }
+  }, [foodItems]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pb-16 font-sans">
@@ -73,67 +83,23 @@ export const HomePage: React.FC = () => {
           <HeroBanner />
         </section>
 
-        {/* SEARCH & CATEGORY FILTER BAR */}
-        <section className="my-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-3xl border border-slate-800/80 backdrop-blur-md">
-            {/* Search Input */}
-            <div className="relative w-full sm:w-80">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search food items..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 shadow-sm text-sm transition-all"
-              />
-            </div>
-
-            {/* Category Filter Buttons */}
-            <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 scrollbar-none">
-              {[
-                { id: "all", name: "All", icon: Utensils },
-                { id: "burger", name: "Burgers", icon: Flame },
-                { id: "pizza", name: "Pizza", icon: Pizza },
-                { id: "drinks", name: "Drinks", icon: Clock },
-              ].map((cat) => {
-                const Icon = cat.icon;
-                const isActive = selectedCategory === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => setSelectedCategory(cat.id)}
-                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl font-semibold text-xs whitespace-nowrap transition-all duration-300 ${
-                      isActive
-                        ? "bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 font-bold"
-                        : "bg-slate-950 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-800"
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                    {cat.name}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* POPULAR DISHES SECTION */}
+        {/* FOOD ITEMS SECTION */}
         <section id="menu" className="my-8">
           <div className="mb-6 flex items-end justify-between">
             <div>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold uppercase tracking-wider mb-2">
-                <Sparkles className="w-3 h-3" /> Fresh & Delicious
+                <Sparkles className="w-3 h-3" /> Trending Dishes
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                Popular Dishes
+                Popular Items
               </h2>
               <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                Delicious items crafted with fresh ingredients
+                Explore customer favorites crafted with fresh ingredients
               </p>
             </div>
             {!isLoading && !isError && (
               <span className="text-xs text-slate-400 font-medium bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
-                Showing {filteredDishes.length} items
+                Showing {foodItems.length} items
               </span>
             )}
           </div>
@@ -169,11 +135,12 @@ export const HomePage: React.FC = () => {
                 <AlertCircle className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-bold text-slate-100">
-                Failed to Load Food Items
+                Failed to Load Popular Items
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                {(error as any)?.data?.message ||
-                  "Something went wrong while fetching the menu. Please check your network connection."}
+                {error && typeof error === "object" && "data" in error
+                  ? ((error as any).data?.message ?? "Failed to fetch data")
+                  : "Something went wrong while fetching popular items. Please check your network connection."}
               </p>
               <button
                 onClick={() => refetch()}
@@ -187,12 +154,12 @@ export const HomePage: React.FC = () => {
           {/* FOOD ITEMS GRID */}
           {!isLoading && !isError && (
             <AnimatePresence>
-              {filteredDishes.length > 0 ? (
+              {foodItems.length > 0 ? (
                 <motion.div
                   layout
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
                 >
-                  {filteredDishes.map((dish) => {
+                  {foodItems.map((dish) => {
                     const itemId = dish._id || dish.id;
                     return (
                       <motion.div
@@ -258,14 +225,14 @@ export const HomePage: React.FC = () => {
                   })}
                 </motion.div>
               ) : (
-                /* EMPTY SEARCH STATE */
+                /* EMPTY STATE */
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="text-center py-16 bg-slate-900 border border-slate-800 rounded-3xl"
                 >
                   <p className="text-slate-400 text-sm font-medium">
-                    No food items found matching your search.
+                    No popular items found.
                   </p>
                 </motion.div>
               )}
