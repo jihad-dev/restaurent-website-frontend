@@ -183,7 +183,7 @@ const Customers = () => {
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="min-h-screen bg-[#0b1329] p-4 sm:p-6 md:p-8 text-slate-100"
+      className="min-h-screen bg-[#020618] p-4 sm:p-6 md:p-8 text-slate-100"
     >
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Banner Section */}
@@ -436,7 +436,7 @@ const Customers = () => {
                               >
                                 <button
                                   title="Change Status"
-                                  className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors"
+                                  className="p-2 text-slate-400 hover:text-indigo-400  hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                                 >
                                   <FiChevronRight className="w-4 h-4" />
                                 </button>
@@ -447,16 +447,16 @@ const Customers = () => {
                               >
                                 <button
                                   title="View Details"
-                                  className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors"
+                                  className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                                 >
-                                  <FiEye className="w-4 h-4" />
+                                  <FiEye className="w-4 h-4 " />
                                 </button>
                               </Link>
 
                               <button
                                 onClick={() => handleDelete(customer)}
                                 title="Delete Customer"
-                                className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors"
+                                className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                               >
                                 <FiTrash2 className="w-4 h-4" />
                               </button>

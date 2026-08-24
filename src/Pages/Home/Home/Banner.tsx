@@ -9,9 +9,9 @@ import {
   Flame,
   Tag,
   Clock,
-  Heart,
   Award,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface Banner {
   id: string;
@@ -311,13 +311,16 @@ export const HeroBanner: React.FC = () => {
                       : "opacity-0 translate-y-6"
                   }`}
                 >
-                  <a
-                    href={banner.linkUrl}
-                    className="relative group/btn overflow-hidden inline-flex items-center gap-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold px-6 py-3.5 rounded-2xl transition-all duration-300 shadow-xl shadow-amber-500/25 hover:shadow-amber-500/40 active:scale-95 text-sm sm:text-base"
-                  >
-                    <span>Order Now</span>
-                    <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
-                  </a>
+                  <Link to='/items'>
+                
+                    <a
+                      href=''
+                      className="relative group/btn overflow-hidden inline-flex items-center gap-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold px-6 py-3.5 rounded-2xl transition-all duration-300 shadow-xl shadow-amber-500/25 hover:shadow-amber-500/40 active:scale-95 text-sm sm:text-base"
+                    >
+                      <span>Order Now</span>
+                      <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
+                    </a>
+                  </Link>
 
                   {banner.promoCode && (
                     <button

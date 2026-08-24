@@ -257,7 +257,7 @@ const AllAdmin = () => {
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
                               <Link
-                                to={`/dashboard/admin/admin-info/${admin._id}`}
+                                to={`/dashboard/customers/${admin._id}`}
                                 className="p-2 text-slate-400 hover:text-amber-400 hover:bg-slate-800 rounded-xl transition-all"
                                 title="View Details"
                               >

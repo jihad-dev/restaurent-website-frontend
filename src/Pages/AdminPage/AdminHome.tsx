@@ -179,7 +179,7 @@ const AdminHome = () => {
   // ---------------- 2. REALTIME SOCKET LISTENER ----------------
   const playNotificationSound = useCallback(() => {
     try {
-      const audio = new Audio("/notification.wav");
+      const audio = new Audio("/notification2.wav");
       audio.play().catch((err) => {
         console.warn("Autoplay blocked or audio error:", err);
       });

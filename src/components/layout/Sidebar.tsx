@@ -257,7 +257,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
         {
           to: "/",
           icon: <Home size={18} />,
-          label: "Public Home",
+          label: "Home",
         },
       ],
     },
