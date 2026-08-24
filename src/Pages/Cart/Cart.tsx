@@ -138,10 +138,11 @@ const Cart = () => {
       acc + (item?.foodId?.price || 0) * item?.quantity,
     0,
   );
-
+// TODO : TAX RATE
   const shipping = 15.99;
   const tax = subtotal * 0.1;
   const total = subtotal + shipping + tax;
+console.log(total,'cart toal');
 
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-100 py-12 px-4 sm:px-6 lg:px-8 overflow-hidden pt-24">

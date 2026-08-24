@@ -17,7 +17,7 @@ const baseQuery = fetchBaseQuery({
   credentials: "include",
   prepareHeaders: (headers, { getState }) => {
 
-    const token = (getState() as RootState).auth.token; 
+    const token = (getState() as RootState).auth.token;
 
     if (token) {
       headers.set("authorization", `${token}`);
@@ -62,7 +62,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<
       );
 
       result = await baseQuery(args, api, extraOptions);
-     
+
     } else {
       api.dispatch(logout());
     }
@@ -74,7 +74,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQueryWithRefreshToken,
-  tagTypes: ["admins", "users", "categories", "foods", "cart", "orders", "notifications"],
+  tagTypes: ["admins", "users", "categories", "foods", "cart", "orders", "notifications", "reviews"],
   endpoints: () => ({}),
 });
 

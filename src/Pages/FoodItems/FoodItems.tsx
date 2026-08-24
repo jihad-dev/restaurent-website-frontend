@@ -142,8 +142,8 @@ const FoodItems: React.FC = () => {
       <section className="relative bg-slate-950 text-white py-14 px-4 text-center overflow-hidden border-b border-slate-800/60">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:16px_16px]" />
         <div className="relative max-w-3xl mx-auto space-y-3">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" /> Delicious Selection
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 mt-10 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 " /> Delicious Selection
           </span>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
             Explore Our Special Menu
@@ -209,7 +209,7 @@ const FoodItems: React.FC = () => {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize whitespace-nowrap transition-all ${
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize whitespace-nowrap transition-all cursor-pointer ${
                     selectedCategory === cat
                       ? "bg-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/10"
                       : "bg-slate-950 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-800/60"
