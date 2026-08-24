@@ -61,7 +61,16 @@ const itemsApi = baseApi.injectEndpoints({
       providesTags: ["foods"],
       transformResponse: (response: any) => response?.data,
     }),
-   addReview: builder.mutation({
+    // REVIEW API 
+    getSingleReview: builder.query({
+      query: ({ orderId, foodId, userId }: { orderId: string; foodId: string; userId: string }) => ({
+        url: `/reviews/single?orderId=${orderId}&foodId=${foodId}&userId=${userId}`,
+        method: "GET",
+      }),
+      providesTags: ["reviews"],
+    }),
+
+    addReview: builder.mutation({
       query: (data: any) => ({
         url: "/reviews/add",
         method: "POST",
@@ -70,6 +79,14 @@ const itemsApi = baseApi.injectEndpoints({
       invalidatesTags: ["reviews"],
     }),
 
+    updateReview: builder.mutation({
+      query: (data: any) => ({
+        url: "/reviews/update",
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["reviews"],
+    }),
   }),
 });
 
@@ -80,5 +97,7 @@ export const {
   useGetAllFoodItemsQuery,
   useGetFoodsByCategoryQuery,
   useDeleteFoodItemMutation,
-  useAddReviewMutation
+  useAddReviewMutation,
+  useUpdateReviewMutation,
+  useGetSingleReviewQuery
 } = itemsApi;
