@@ -78,7 +78,14 @@ const itemsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["reviews"],
     }),
-
+    getAllReviews: builder.query({
+      query: () => ({
+        url: "/reviews",
+        method: "GET",
+      }),
+      providesTags: ["reviews"],
+      transformResponse: (response: any) => response?.data,
+    }),
     updateReview: builder.mutation({
       query: (data: any) => ({
         url: "/reviews/update",
@@ -99,5 +106,6 @@ export const {
   useDeleteFoodItemMutation,
   useAddReviewMutation,
   useUpdateReviewMutation,
-  useGetSingleReviewQuery
+  useGetSingleReviewQuery,
+  useGetAllReviewsQuery
 } = itemsApi;

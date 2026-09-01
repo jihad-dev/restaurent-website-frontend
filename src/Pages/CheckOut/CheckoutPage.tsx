@@ -1,3 +1,5 @@
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, FormEvent } from "react";
 import {
   useClearCartMutation,
@@ -91,7 +93,6 @@ const CheckoutPage = () => {
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] =
     useState("bKash");
 
-  // BD Phone Number Regex: Starts with 013, 014, 015, 016, 017, 018, 019 and exactly 11 digits
   const validateBDPhone = (phone: string) => {
     const bdPhoneRegex = /^01[3-9]\d{8}$/;
     return bdPhoneRegex.test(phone);
@@ -136,7 +137,6 @@ const CheckoutPage = () => {
     const { name, value } = e.target;
 
     if (name === "phone") {
-      // Allow only numbers and restrict max length to 11
       const onlyNums = value.replace(/\D/g, "").slice(0, 11);
 
       setShippingInfo((prevState) => ({
@@ -144,7 +144,6 @@ const CheckoutPage = () => {
         phone: onlyNums,
       }));
 
-      // Real-time validation message
       if (onlyNums.length > 0 && !validateBDPhone(onlyNums)) {
         setPhoneError("Enter a valid 11-digit BD number (e.g. 017XXXXXXXX)");
       } else {
@@ -202,7 +201,7 @@ const CheckoutPage = () => {
       const formattedOrderItems = cart.items
         .filter((item) => item?.foodId?._id)
         .map((item) => ({
-          food: item.foodId._id,
+          food: item.foodId,
           qty: item.quantity,
           price: item.foodId.price || 0,
         }));
@@ -214,12 +213,12 @@ const CheckoutPage = () => {
         shippingInfo,
         paymentMethod: selectedMethod,
         totalPrice,
-      };
+      } as any;
 
       const res = (await createOrder(
         orderData,
       ).unwrap()) as CreateOrderSuccessResponse;
-      console.log(orderData, "orderdata");
+
       if (selectedPaymentMethodId === "COD") {
         toast.success("Order placed successfully! Fresh food is on the way.", {
           id: toastId,
@@ -244,7 +243,6 @@ const CheckoutPage = () => {
         }
       }
     } catch (error) {
-      console.error("Failed to create order:", error);
       let errorMessage = "Failed to place order. Please try again.";
 
       if (
@@ -269,8 +267,8 @@ const CheckoutPage = () => {
 
   if (!isRedirecting && !cart?.items?.length) {
     return (
-      <div className="min-h-[85vh] flex items-center justify-center bg-slate-50/50 p-4">
-        <div className="text-center p-8 md:p-12 bg-white rounded-3xl shadow-xl border border-slate-100 max-w-md w-full animate-in fade-in zoom-in duration-300">
+      <div className="min-h-screen pt-28 pb-12 flex items-center justify-center bg-[#F8FAFC] p-4">
+        <div className="text-center p-8 md:p-12 bg-white rounded-3xl shadow-xl border border-slate-100 max-w-md w-full">
           <div className="w-20 h-20 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
             <ShoppingBag className="w-10 h-10" />
           </div>
@@ -283,7 +281,7 @@ const CheckoutPage = () => {
           </p>
           <button
             onClick={() => navigate("/")}
-            className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold py-3.5 px-6 rounded-2xl hover:from-orange-600 hover:to-amber-600 transition-all duration-300 shadow-lg shadow-orange-500/25 active:scale-[0.98] flex items-center justify-center space-x-2"
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-6 rounded-2xl transition-all duration-300 shadow-lg shadow-orange-500/25 active:scale-[0.98] flex items-center justify-center space-x-2"
           >
             <UtensilsCrossed className="w-5 h-5" />
             <span>Explore Menu</span>
@@ -299,10 +297,10 @@ const CheckoutPage = () => {
   const isPhoneValid = validateBDPhone(shippingInfo.phone);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] py-8 md:py-14 text-slate-800">
+    <div className="min-h-screen bg-[#F8FAFC] pt-24 md:pt-28 pb-12 text-slate-800">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Header Section */}
-        <div className="mb-8 md:mb-10 text-center md:text-left flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-200/60 pb-6">
+        <div className="mb-8 md:mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-200/80 pb-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
               Checkout
@@ -312,8 +310,8 @@ const CheckoutPage = () => {
               doorstep.
             </p>
           </div>
-          <div className="mt-4 md:mt-0 inline-flex items-center space-x-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-2 rounded-full text-xs font-semibold self-start md:self-auto">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <div className="inline-flex items-center space-x-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-2 rounded-full text-xs font-semibold self-start md:self-auto">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>256-Bit SSL Encrypted & Secure</span>
           </div>
         </div>
@@ -324,9 +322,9 @@ const CheckoutPage = () => {
           <div className="lg:col-span-7 space-y-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Delivery Details Card */}
-              <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 md:p-8 transition-all hover:shadow-md">
+              <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 md:p-8">
                 <div className="flex items-center space-x-3 border-b border-slate-100 pb-4 mb-6">
-                  <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center font-bold">
+                  <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center font-bold shrink-0">
                     <MapPin className="w-5 h-5" />
                   </div>
                   <div>
@@ -339,8 +337,8 @@ const CheckoutPage = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="md:col-span-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="sm:col-span-2">
                     <label className="block text-slate-700 text-xs font-bold uppercase tracking-wider mb-2">
                       Street Address <span className="text-rose-500">*</span>
                     </label>
@@ -351,11 +349,10 @@ const CheckoutPage = () => {
                       onChange={handleInputChange}
                       required
                       placeholder="House / Flat no., Road name, Area..."
-                      className="w-full pl-4 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200"
                     />
                   </div>
 
-                  {/* BD Phone Input Field */}
                   <div>
                     <label className="block text-slate-700 text-xs font-bold uppercase tracking-wider mb-2">
                       Contact Phone (BD){" "}
@@ -369,7 +366,7 @@ const CheckoutPage = () => {
                         onChange={handleInputChange}
                         required
                         placeholder="017XXXXXXXX"
-                        className={`w-full pl-4 pr-10 py-3 bg-slate-50/50 border rounded-2xl text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 transition-all duration-200 ${
+                        className={`w-full pl-4 pr-10 py-3 bg-slate-50 border rounded-2xl text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 transition-all duration-200 ${
                           phoneError
                             ? "border-rose-400 focus:ring-rose-500/20 focus:border-rose-500"
                             : isPhoneValid
@@ -387,8 +384,8 @@ const CheckoutPage = () => {
                       </div>
                     </div>
                     {phoneError ? (
-                      <p className="text-[11px] text-rose-500 font-semibold mt-1.5 flex items-center space-x-1">
-                        <span>{phoneError}</span>
+                      <p className="text-[11px] text-rose-500 font-semibold mt-1.5">
+                        {phoneError}
                       </p>
                     ) : (
                       <p className="text-[11px] text-slate-400 mt-1">
@@ -408,7 +405,7 @@ const CheckoutPage = () => {
                       onChange={handleInputChange}
                       required
                       placeholder="Dhaka, Barisal..."
-                      className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200"
                     />
                   </div>
 
@@ -423,7 +420,7 @@ const CheckoutPage = () => {
                       onChange={handleInputChange}
                       required
                       placeholder="1207"
-                      className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200"
                     />
                   </div>
 
@@ -445,9 +442,9 @@ const CheckoutPage = () => {
               </div>
 
               {/* Payment Methods Selection Card */}
-              <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 md:p-8 transition-all hover:shadow-md">
+              <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 md:p-8">
                 <div className="flex items-center space-x-3 border-b border-slate-100 pb-4 mb-6">
-                  <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center font-bold">
+                  <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center font-bold shrink-0">
                     <CreditCard className="w-5 h-5" />
                   </div>
                   <div>
@@ -469,13 +466,15 @@ const CheckoutPage = () => {
                         onClick={() => setSelectedPaymentMethodId(option.id)}
                         className={`relative cursor-pointer p-4 rounded-2xl border-2 transition-all duration-200 flex items-center justify-between ${
                           isSelected
-                            ? "border-orange-500 bg-orange-50/30 ring-4 ring-orange-500/10 shadow-sm"
+                            ? "border-orange-500 bg-orange-50/20 ring-2 ring-orange-500/10 shadow-sm"
                             : "border-slate-100 hover:border-slate-200 bg-white"
                         }`}
                       >
                         <div className="flex items-center space-x-3">
                           <div
-                            className={`p-2.5 rounded-xl ${isSelected ? "bg-white shadow-xs" : "bg-slate-50"}`}
+                            className={`p-2.5 rounded-xl shrink-0 ${
+                              isSelected ? "bg-white shadow-xs" : "bg-slate-50"
+                            }`}
                           >
                             {option.icon}
                           </div>
@@ -492,7 +491,7 @@ const CheckoutPage = () => {
                         </div>
 
                         <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
                             isSelected
                               ? "border-orange-500 bg-orange-500 text-white"
                               : "border-slate-300"
@@ -508,7 +507,7 @@ const CheckoutPage = () => {
                 </div>
 
                 {activePaymentObj && (
-                  <div className="bg-slate-50/80 border border-slate-200/60 rounded-2xl p-4 text-xs text-slate-600 flex items-start space-x-3">
+                  <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-xs text-slate-600 flex items-start space-x-3">
                     <ShieldCheck className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
                     <p className="leading-relaxed">
                       {activePaymentObj.description}
@@ -521,7 +520,7 @@ const CheckoutPage = () => {
               <button
                 type="submit"
                 disabled={isOrderLoading || isRedirecting}
-                className={`w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 text-white py-4 px-6 rounded-2xl font-black text-base shadow-lg shadow-orange-500/25 active:scale-[0.99] transition-all duration-300 flex items-center justify-center space-x-2 ${
+                className={`w-full bg-orange-500 hover:bg-orange-600 text-white py-4 px-6 rounded-2xl font-extrabold text-base shadow-lg shadow-orange-500/20 active:scale-[0.99] transition-all duration-200 flex items-center justify-center space-x-2 ${
                   isOrderLoading || isRedirecting
                     ? "opacity-60 cursor-not-allowed"
                     : ""
@@ -543,7 +542,7 @@ const CheckoutPage = () => {
           </div>
 
           {/* Right Column: Order Summary */}
-          <div className="lg:col-span-5 sticky top-6">
+          <div className="lg:col-span-5 lg:sticky lg:top-28">
             <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 md:p-8 space-y-6">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
@@ -571,7 +570,7 @@ const CheckoutPage = () => {
                         <img
                           src={food?.image || "/placeholder.png"}
                           alt={food?.name || "Food Item"}
-                          className="w-14 h-14 object-cover rounded-xl border border-slate-100 shadow-2xs"
+                          className="w-14 h-14 object-cover rounded-xl border border-slate-100 shrink-0"
                         />
                         <div>
                           <p className="font-bold text-slate-800 text-sm line-clamp-1">
@@ -583,7 +582,7 @@ const CheckoutPage = () => {
                           </p>
                         </div>
                       </div>
-                      <p className="font-extrabold text-slate-900 text-sm">
+                      <p className="font-extrabold text-slate-900 text-sm shrink-0">
                         ৳{(price * quantity).toFixed(2)}
                       </p>
                     </div>

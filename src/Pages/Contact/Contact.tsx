@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -37,6 +38,7 @@ const Contact: React.FC = () => {
         { id: toastId },
       );
       form.reset();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error: unknown) {
       toast.error("Failed to send message. Please try again.", { id: toastId });
     } finally {

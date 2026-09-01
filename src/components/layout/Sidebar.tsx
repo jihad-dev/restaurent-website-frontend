@@ -245,7 +245,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
           label: "Coupons & Offers",
         },
         {
-          to: "/dashboard/reviews",
+          to: "/dashboard/all-reviews",
           icon: <Star size={18} />,
           label: "Customer Reviews",
         },
