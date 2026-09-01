@@ -193,7 +193,7 @@ const Header = () => {
                 to="/login"
                 className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95"
               >
-                Sign In
+                Login
               </Link>
             )}
 
