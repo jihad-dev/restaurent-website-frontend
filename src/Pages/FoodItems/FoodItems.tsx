@@ -346,14 +346,14 @@ const FoodItems: React.FC = () => {
                     type="button"
                     disabled={loadingItemId === food._id}
                     onClick={(e) => handleAddToCart(e, food._id)}
-                    className="bg-amber-500 hover:bg-amber-400 disabled:bg-amber-600/50 text-slate-950 text-xs font-bold px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 shadow-md active:scale-95 disabled:scale-100 disabled:cursor-not-allowed"
+                    className="bg-amber-500 hover:bg-amber-400 disabled:bg-amber-600/50 text-slate-950 text-xs font-bold px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 shadow-md active:scale-95 disabled:scale-100 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {loadingItemId === food._id ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <Plus className="w-4 h-4 stroke-[2.5]" />
                     )}
-                    <span>
+                    <span >
                       {loadingItemId === food._id ? "Adding..." : "Add"}
                     </span>
                   </button>

@@ -12,140 +12,59 @@ import {
   Award,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useGetActiveBannersQuery } from "../../../Redux/features/banner/bannerApi";
 
 interface Banner {
-  id: string;
+  _id?: string;
+  id?: string;
   title: string;
   subtitle?: string;
   description: string;
   imageUrl: string;
   promoCode?: string;
   discountPercentage?: number;
-  linkUrl: string;
+  linkUrl?: string;
   accentColor?: string;
   badgeText?: string;
   badgeIcon?: "sparkles" | "flame" | "clock" | "award";
 }
 
-const mockBanners: Banner[] = [
-  {
-    id: "1",
-    title: "Weekend Cheeseburger Dhamaka!",
-    subtitle: "Savor The Juiciness",
-    description:
-      "Enjoy up to 20% off on all double beef & cheese burgers. Premium prime beef grilled to perfection!",
-    imageUrl:
-      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1600&q=85",
-    promoCode: "BURGER20",
-    discountPercentage: 20,
-    linkUrl: "#menu",
-    accentColor: "from-amber-500 via-orange-600 to-red-600",
-    badgeText: "Weekend Special",
-    badgeIcon: "flame",
-  },
-  {
-    id: "2",
-    title: "Authentic Wood-fired Pizza",
-    subtitle: "Italian Artisanal Crust",
-    description:
-      "Get a free chilled beverage with any Large Pepperoni Pizza. Baked fresh in 900° wood ovens.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1600&q=85",
-    promoCode: "FREEPIZZA",
-    discountPercentage: 15,
-    linkUrl: "#menu",
-    accentColor: "from-rose-500 via-pink-600 to-purple-600",
-    badgeText: "Chef's Choice",
-    badgeIcon: "award",
-  },
-  {
-    id: "3",
-    title: "Fresh Sushi & Ramen Combo",
-    subtitle: "Taste of Kyoto",
-    description:
-      "Order any specialty roll and get 25% off on authentic tonkotsu ramen broth bowls.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1600&q=85",
-    promoCode: "SUSHI25",
-    discountPercentage: 25,
-    linkUrl: "#menu",
-    accentColor: "from-emerald-500 via-teal-600 to-cyan-600",
-    badgeText: "Trending Now",
-    badgeIcon: "sparkles",
-  },
-  {
-    id: "4",
-    title: "Crispy Golden Fried Chicken",
-    subtitle: "Extra Crunch, Extra Joy",
-    description:
-      "12-piece family bucket with signature spicy garlic glaze and double large sides.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&w=1600&q=85",
-    promoCode: "CRUNCH30",
-    discountPercentage: 30,
-    linkUrl: "#menu",
-    accentColor: "from-yellow-500 via-amber-600 to-orange-700",
-    badgeText: "Bestseller",
-    badgeIcon: "flame",
-  },
-  {
-    id: "5",
-    title: "Artisanal Dessert Platter",
-    subtitle: "Sweet Perfection",
-    description:
-      "Decadent molten lava cake, pistachio macarons, and belgian chocolate gelato platter.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=1600&q=85",
-    promoCode: "SWEET18",
-    discountPercentage: 18,
-    linkUrl: "#menu",
-    accentColor: "from-fuchsia-500 via-pink-600 to-rose-600",
-    badgeText: "Limited Time",
-    badgeIcon: "clock",
-  },
-  {
-    id: "6",
-    title: "Healthy Green Energy Bowl",
-    subtitle: "Organic & Fresh",
-    description:
-      "Wild quinoa, avocado, edamame, and house tahini dressing. Packed with nutrients.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1600&q=85",
-    promoCode: "HEALTHY10",
-    discountPercentage: 10,
-    linkUrl: "#menu",
-    accentColor: "from-green-500 via-emerald-600 to-teal-700",
-    badgeText: "Fit & Healthy",
-    badgeIcon: "sparkles",
-  },
-];
-
 export const HeroBanner: React.FC = () => {
+  const { data: responseData, isLoading } = useGetActiveBannersQuery(undefined);
+
+  const banners: Banner[] =
+    ((Array.isArray(responseData)
+      ? responseData
+      : responseData?.data) as Banner[]) || [];
+
+
   const [currentSlide, setCurrentSlide] = useState(0);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
-  const totalSlides = mockBanners.length;
+  const totalSlides = banners.length;
   const SLIDE_DURATION = 5500;
 
   const handleNext = useCallback(() => {
+    if (totalSlides === 0) return;
     setCurrentSlide((prev) => (prev + 1) % totalSlides);
   }, [totalSlides]);
 
   const handlePrev = useCallback(() => {
+    if (totalSlides === 0) return;
     setCurrentSlide((prev) => (prev === 0 ? totalSlides - 1 : prev - 1));
   }, [totalSlides]);
 
   // Auto slide timer
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || totalSlides === 0) return;
     const timer = setInterval(() => {
       handleNext();
     }, SLIDE_DURATION);
     return () => clearInterval(timer);
-  }, [isPaused, handleNext]);
+  }, [isPaused, handleNext, totalSlides]);
 
   // Touch handlers for swipe support
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -188,6 +107,18 @@ export const HeroBanner: React.FC = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="w-full h-[450px] sm:h-[500px] md:h-[540px] rounded-3xl bg-slate-900 animate-pulse my-6 flex items-center justify-center text-slate-500">
+        Loading Banners...
+      </div>
+    );
+  }
+
+  if (banners.length === 0) {
+    return null;
+  }
+
   return (
     <div
       onMouseEnter={() => setIsPaused(true)}
@@ -201,14 +132,12 @@ export const HeroBanner: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
         <div
           className={`absolute -top-32 -left-32 w-[30rem] h-[30rem] rounded-full bg-gradient-to-br ${
-            mockBanners[currentSlide].accentColor ||
-            "from-amber-500 to-orange-500"
+            banners[currentSlide]?.accentColor || "from-amber-500 to-orange-500"
           } opacity-25 blur-[120px] transition-all duration-1000 ease-in-out`}
         />
         <div
           className={`absolute -bottom-32 -right-32 w-[30rem] h-[30rem] rounded-full bg-gradient-to-tr ${
-            mockBanners[currentSlide].accentColor ||
-            "from-amber-500 to-orange-500"
+            banners[currentSlide]?.accentColor || "from-amber-500 to-orange-500"
           } opacity-20 blur-[130px] transition-all duration-1000 ease-in-out`}
         />
       </div>
@@ -218,144 +147,142 @@ export const HeroBanner: React.FC = () => {
         className="flex transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] z-10 relative"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
       >
-        {mockBanners.map((banner, idx) => {
-          const isActive = currentSlide === idx;
+        {banners &&
+          banners?.map((banner, idx) => {
+            const isActive = currentSlide === idx;
 
-          return (
-            <div
-              key={banner.id}
-              className="min-w-full relative h-[450px] sm:h-[500px] md:h-[540px] flex items-center overflow-hidden"
-            >
-              {/* Background Image with Zoom & Vignette */}
-              <div className="absolute inset-0 overflow-hidden">
-                <img
-                  src={banner.imageUrl}
-                  alt={banner.title}
-                  className={`w-full h-full object-cover transform transition-transform duration-[9000ms] ease-out ${
-                    isActive ? "scale-110" : "scale-100"
-                  }`}
-                />
-              </div>
-
-              {/* Multi-layer Gradient Overlays */}
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/85 via-40% to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/30" />
-
-              {/* Content Box */}
-              <div className="relative z-10 max-w-2xl px-6 sm:px-12 md:px-16 space-y-4">
-                {/* Badges */}
-                <div
-                  className={`flex flex-wrap items-center gap-2.5 transition-all duration-700 delay-100 ${
-                    isActive
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-4"
-                  }`}
-                >
-                  {banner.discountPercentage && (
-                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/25">
-                      <Sparkles className="w-3.5 h-3.5 fill-slate-950" />
-                      {banner.discountPercentage}% OFF
-                    </span>
-                  )}
-
-                  {banner.badgeText && (
-                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-slate-900/90 border border-slate-700/80 text-amber-300 text-xs font-semibold uppercase tracking-wider backdrop-blur-md shadow-inner">
-                      {renderBadgeIcon(banner.badgeIcon)}
-                      {banner.badgeText}
-                    </span>
-                  )}
+            return (
+              <div
+                key={banner._id || banner.id || idx}
+                className="min-w-full relative h-[450px] sm:h-[500px] md:h-[540px] flex items-center overflow-hidden"
+              >
+                {/* Background Image with Zoom & Vignette */}
+                <div className="absolute inset-0 overflow-hidden">
+                  <img
+                    src={banner.imageUrl}
+                    alt={banner.title}
+                    className={`w-full h-full object-cover transform transition-transform duration-[9000ms] ease-out ${
+                      isActive ? "scale-110" : "scale-100"
+                    }`}
+                  />
                 </div>
 
-                {/* Subtitle */}
-                {banner.subtitle && (
-                  <p
-                    className={`text-amber-400/90 text-xs sm:text-sm uppercase font-bold tracking-widest transition-all duration-700 delay-150 ${
+                {/* Multi-layer Gradient Overlays */}
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/85 via-40% to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/30" />
+
+                {/* Content Box */}
+                <div className="relative z-10 max-w-2xl px-6 sm:px-12 md:px-16 space-y-4">
+                  {/* Badges */}
+                  <div
+                    className={`flex flex-wrap items-center gap-2.5 transition-all duration-700 delay-100 ${
                       isActive
                         ? "opacity-100 translate-y-0"
                         : "opacity-0 translate-y-4"
                     }`}
                   >
-                    {banner.subtitle}
+                    {banner.discountPercentage && (
+                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/25">
+                        <Sparkles className="w-3.5 h-3.5 fill-slate-950" />
+                        {banner.discountPercentage}% OFF
+                      </span>
+                    )}
+
+                    {banner.badgeText && (
+                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-slate-900/90 border border-slate-700/80 text-amber-300 text-xs font-semibold uppercase tracking-wider backdrop-blur-md shadow-inner">
+                        {renderBadgeIcon(banner.badgeIcon)}
+                        {banner.badgeText}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Subtitle */}
+                  {banner.subtitle && (
+                    <p
+                      className={`text-amber-400/90 text-xs sm:text-sm uppercase font-bold tracking-widest transition-all duration-700 delay-150 ${
+                        isActive
+                          ? "opacity-100 translate-y-0"
+                          : "opacity-0 translate-y-4"
+                      }`}
+                    >
+                      {banner.subtitle}
+                    </p>
+                  )}
+
+                  {/* Main Heading */}
+                  <h1
+                    className={`text-3xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.08] text-white transition-all duration-700 delay-200 ${
+                      isActive
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-6"
+                    }`}
+                  >
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-slate-300">
+                      {banner.title}
+                    </span>
+                  </h1>
+
+                  {/* Description */}
+                  <p
+                    className={`text-slate-300 text-sm sm:text-base md:text-lg line-clamp-2 max-w-xl font-normal leading-relaxed transition-all duration-700 delay-300 ${
+                      isActive
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-6"
+                    }`}
+                  >
+                    {banner.description}
                   </p>
-                )}
 
-                {/* Main Heading */}
-                <h1
-                  className={`text-3xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.08] text-white transition-all duration-700 delay-200 ${
-                    isActive
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-6"
-                  }`}
-                >
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-slate-300">
-                    {banner.title}
-                  </span>
-                </h1>
-
-                {/* Description */}
-                <p
-                  className={`text-slate-300 text-sm sm:text-base md:text-lg line-clamp-2 max-w-xl font-normal leading-relaxed transition-all duration-700 delay-300 ${
-                    isActive
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-6"
-                  }`}
-                >
-                  {banner.description}
-                </p>
-
-                {/* Action Buttons */}
-                <div
-                  className={`pt-3 flex flex-wrap items-center gap-3 sm:gap-4 transition-all duration-700 delay-400 ${
-                    isActive
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-6"
-                  }`}
-                >
-                  <Link to='/items'>
-                
-                    <a
-                      href=''
+                  {/* Action Buttons */}
+                  <div
+                    className={`pt-3 flex flex-wrap items-center gap-3 sm:gap-4 transition-all duration-700 delay-400 ${
+                      isActive
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-6"
+                    }`}
+                  >
+                    <Link
+                      to="/items"
                       className="relative group/btn overflow-hidden inline-flex items-center gap-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold px-6 py-3.5 rounded-2xl transition-all duration-300 shadow-xl shadow-amber-500/25 hover:shadow-amber-500/40 active:scale-95 text-sm sm:text-base"
                     >
                       <span>Order Now</span>
                       <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
-                    </a>
-                  </Link>
+                    </Link>
 
-                  {banner.promoCode && (
-                    <button
-                      type="button"
-                      onClick={() => handleCopyCode(banner.promoCode!)}
-                      className="group/code relative inline-flex items-center gap-2.5 px-4 py-3.5 rounded-2xl border border-slate-700/80 bg-slate-900/80 hover:bg-slate-800/90 text-xs sm:text-sm font-mono backdrop-blur-md transition-all active:scale-95 text-slate-200 shadow-md hover:border-amber-500/50"
-                      title="Click to copy promo code"
-                    >
-                      <Tag className="w-4 h-4 text-amber-400" />
-                      <span className="text-slate-400">Code:</span>
-                      <span className="text-amber-400 font-extrabold tracking-wider">
-                        {banner.promoCode}
-                      </span>
-
-                      <div className="ml-1 p-1 rounded-lg bg-slate-800 group-hover/code:bg-slate-700 transition-colors">
-                        {copiedCode === banner.promoCode ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-400 animate-in zoom-in-50 duration-200" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5 text-slate-400 group-hover/code:text-slate-200 transition-colors" />
-                        )}
-                      </div>
-
-                      {/* Toast Tooltip */}
-                      {copiedCode === banner.promoCode && (
-                        <span className="absolute -top-9 left-1/2 -translate-x-1/2 bg-emerald-500 text-slate-950 font-bold text-[10px] uppercase px-2 py-0.5 rounded-md shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
-                          Copied!
+                    {banner.promoCode && (
+                      <button
+                        type="button"
+                        onClick={() => handleCopyCode(banner.promoCode!)}
+                        className="group/code relative inline-flex items-center gap-2.5 px-4 py-3.5 rounded-2xl border border-slate-700/80 bg-slate-900/80 hover:bg-slate-800/90 text-xs sm:text-sm font-mono backdrop-blur-md transition-all active:scale-95 text-slate-200 shadow-md hover:border-amber-500/50"
+                        title="Click to copy promo code"
+                      >
+                        <Tag className="w-4 h-4 text-amber-400" />
+                        <span className="text-slate-400">Code:</span>
+                        <span className="text-amber-400 font-extrabold tracking-wider">
+                          {banner.promoCode}
                         </span>
-                      )}
-                    </button>
-                  )}
+
+                        <div className="ml-1 p-1 rounded-lg bg-slate-800 group-hover/code:bg-slate-700 transition-colors">
+                          {copiedCode === banner.promoCode ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400 animate-in zoom-in-50 duration-200" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5 text-slate-400 group-hover/code:text-slate-200 transition-colors" />
+                          )}
+                        </div>
+
+                        {/* Toast Tooltip */}
+                        {copiedCode === banner.promoCode && (
+                          <span className="absolute -top-9 left-1/2 -translate-x-1/2 bg-emerald-500 text-slate-950 font-bold text-[10px] uppercase px-2 py-0.5 rounded-md shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
+                            Copied!
+                          </span>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
 
       {/* Navigation Arrow Left */}
@@ -378,7 +305,7 @@ export const HeroBanner: React.FC = () => {
 
       {/* Slide Indicators with Active Progress Bar */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2.5 z-30 bg-slate-950/70 backdrop-blur-md px-4 py-2.5 rounded-full border border-slate-800/80 shadow-2xl">
-        {mockBanners.map((_, idx) => {
+        {banners.map((_, idx) => {
           const isActive = currentSlide === idx;
           return (
             <button

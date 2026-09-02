@@ -19,6 +19,7 @@ import {
   LogOut,
   UserCheck,
   User,
+  BanknoteArrowUp,
 } from "lucide-react";
 import { useGetAllOrdersQuery } from "../../Redux/features/order/orderApi";
 import { useAppDispatch, useAppSelector } from "../../Redux/hooks";
@@ -248,6 +249,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
           to: "/dashboard/all-reviews",
           icon: <Star size={18} />,
           label: "Customer Reviews",
+        },
+        {
+          to: "/dashboard/all-banners",
+          icon: <BanknoteArrowUp size={18} />,
+          label: "All Banners",
         },
       ],
     },

@@ -21,6 +21,7 @@ import Review from "../Pages/Review/Review";
 import CheckoutPage from "../Pages/CheckOut/CheckoutPage";
 import ViewUserInfo from "../Pages/AdminPage/ViewUserInfo";
 import AllCustomerReviews from "../Pages/AdminPage/AllCustomerReviews";
+import AllBannerList from "../Pages/AdminPage/AllBannerList";
 
 // Lazy Loaded Dashboard Components
 const Dashboard = lazy(() => import("../components/layout/Dashboard"));
@@ -242,6 +243,16 @@ export const router = createBrowserRouter([
           <PrivateRoute allowedRoles={["admin", "superAdmin"]}>
             <Suspense fallback={<Preloader />}>
               <AllCustomerReviews />
+            </Suspense>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/dashboard/all-banners",
+        element: (
+          <PrivateRoute allowedRoles={["admin", "superAdmin"]}>
+            <Suspense fallback={<Preloader />}>
+              <AllBannerList />
             </Suspense>
           </PrivateRoute>
         ),
