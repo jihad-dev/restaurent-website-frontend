@@ -77,7 +77,7 @@ interface UserItem {
   role?: string;
 }
 
-const SOCKET_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const SOCKET_URL = import.meta.env.VITE_BACKEND_URL || "https://restaurent-website-backend-mocha.vercel.app";
 
 // ---------------- ⚡ ANIMATION VARIANTS ----------------
 const containerVariants = {
