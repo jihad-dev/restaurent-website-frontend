@@ -1,10 +1,8 @@
-
 // ==========================================
 // 1. Interfaces & Types Definition
-
+// ==========================================
 import { baseApi } from "../../api/baseApi";
 
-// ==========================================
 export interface IBanner {
     _id?: string;
     title: string;
@@ -52,15 +50,18 @@ export const bannerApi = baseApi.injectEndpoints({
             invalidatesTags: ['Banner'],
         }),
 
-        // READ (All): অ্যাডমিন প্যানেলে সব ব্যানার পাওয়ার জন্য
+        // READ (All): অ্যাডমিন প্যানেলে সব ব্যানার পাওয়ার জন্য (৫ মিনিট ক্যাশ রাখা হলো)
         getAllBanners: builder.query<IBannerResponse, void>({
             query: () => ({ url: '/banners' }),
             providesTags: ['Banner'],
+            keepUnusedDataFor: 300, // ৫ মিনিটের জন্য ক্যাশ থাকবে (সেকেন্ডে হিসেব করা হয়)
         }),
 
+        // READ (Active): অ্যাক্টিভ ব্যানার পাওয়ার জন্য (৫ মিনিট ক্যাশ রাখা হলো)
         getActiveBanners: builder.query<IBannerResponse, void>({
             query: () => ({ url: '/banners/active' }),
             providesTags: ['Banner'],
+            keepUnusedDataFor: 300, // ৫ মিনিটের জন্য ক্যাশ থাকবে
         }),
 
         // UPDATE: ব্যানার আপডেট বা Active Status টগল করার জন্য
