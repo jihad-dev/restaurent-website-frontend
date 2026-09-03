@@ -19,7 +19,8 @@ import {
   LogOut,
   UserCheck,
   User,
-  BanknoteArrowUp,
+
+  Images,
 } from "lucide-react";
 import { useGetAllOrdersQuery } from "../../Redux/features/order/orderApi";
 import { useAppDispatch, useAppSelector } from "../../Redux/hooks";
@@ -62,7 +63,7 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
 }) => {
   const location = useLocation();
   const hasChildren = children && children.length > 0;
-  
+
   const isAnyChildActive =
     hasChildren && children.some((child) => location.pathname === child.to);
 
@@ -170,7 +171,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
 
   const pendingCount = pendingOrders?.length ?? 0;
 
-  
   // TODO
   const navigationGroups: NavGroup[] = [
     {
@@ -252,7 +252,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobile, isOpen, onClose }) => {
         },
         {
           to: "/dashboard/all-banners",
-          icon: <BanknoteArrowUp size={18} />,
+          icon: <Images size={18} />,
           label: "All Banners",
         },
       ],

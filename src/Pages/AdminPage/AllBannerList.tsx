@@ -467,7 +467,7 @@ const AllBannerList: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsCreateModalOpen(false)}
-                className="p-2 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white transition-all duration-200 border border-slate-700/50"
+                className="p-2 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white transition-all duration-200 border border-slate-700/50 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -682,14 +682,14 @@ const AllBannerList: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 text-sm font-semibold hover:bg-slate-800/60 transition-all"
+                  className="px-5 cursor-pointer py-2.5 rounded-xl text-slate-400 hover:text-slate-200 text-sm font-semibold hover:bg-slate-800/60 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 text-sm font-black transition-all shadow-lg shadow-amber-500/20 active:scale-95 disabled:opacity-50"
+                  className="px-6 py-2.5 cursor-pointer rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 text-sm font-black transition-all shadow-lg shadow-amber-500/20 active:scale-95 disabled:opacity-50"
                 >
                   {isCreating ? "Saving..." : "Save Banner"}
                 </button>
