@@ -23,8 +23,8 @@ const Login = () => {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("jihadul@gmail.com");
+  const [password, setPassword] = useState("123456");
   const [rememberMe, setRememberMe] = useState(false);
 
   const [login, { isLoading }] = useLoginMutation();

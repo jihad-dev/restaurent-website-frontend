@@ -22,6 +22,7 @@
 //   Star,
 // } from "lucide-react";
 // import { IFood } from "../Cart/Cart";
+// import { useGetSingleReviewQuery } from "../../Redux/features/items/itemsApi";
 
 // interface OrderItem {
 //   food: IFood | string;
@@ -37,7 +38,6 @@
 //   phone: string;
 // }
 
-// // ⚡ paymentInfo Interface matched with real JSON data
 // interface PaymentInfo {
 //   transactionId?: string;
 //   status?: string;
@@ -54,7 +54,7 @@
 //   shippingInfo: ShippingInfo;
 //   paymentMethod: string;
 //   paymentStatus: "Pending" | "Paid" | "Failed" | string;
-//   paymentInfo?: PaymentInfo; // Added nested paymentInfo object
+//   paymentInfo?: PaymentInfo;
 //   totalPrice: number;
 //   status:
 //     | "Pending"
@@ -63,7 +63,7 @@
 //     | "Delivered"
 //     | "Cancelled"
 //     | string;
-//   transactionId?: string; // Fallback for direct field
+//   transactionId?: string;
 //   tran_id?: string;
 //   createdAt: string;
 //   updatedAt: string;
@@ -73,6 +73,46 @@
 //   data?: Order[];
 //   result?: Order[];
 // }
+
+// // ---------------- ⚡ REVIEW BUTTON COMPONENT ----------------
+// const ReviewButton = ({
+//   foodId,
+//   orderId,
+//   userId,
+// }: {
+//   foodId: string;
+//   orderId: string;
+//   userId: string;
+// }) => {
+//   const { data: reviewResponse, isLoading } = useGetSingleReviewQuery(
+//     { orderId, foodId, userId },
+//     { skip: !orderId || !foodId || !userId },
+//   );
+
+//   const isReviewed = Boolean(reviewResponse?.data);
+
+//   if (isLoading) {
+//     return (
+//       <span className="px-4 py-2 bg-slate-800 text-slate-500 rounded-xl text-xs font-semibold">
+//         Checking...
+//       </span>
+//     );
+//   }
+
+//   return (
+//     <Link
+//       to={`/review/${foodId}?orderId=${orderId}`}
+//       className={`px-4 py-2 rounded-xl font-semibold text-xs transition-all flex items-center gap-1.5 border ${
+//         isReviewed
+//           ? "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+//           : "bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border-amber-500/30"
+//       }`}
+//     >
+//       <Star className={`w-4 h-4 ${isReviewed ? "fill-emerald-400" : ""}`} />
+//       {isReviewed ? "Update Review" : "Give Review"}
+//     </Link>
+//   );
+// };
 
 // // ---------------- ⚡ ORDER STEPPER LOGIC & COMPONENT ----------------
 // const ORDER_STEPS = [
@@ -106,10 +146,7 @@
 //   return (
 //     <div className="w-full py-4 px-2 my-1">
 //       <div className="relative flex items-center justify-between">
-//         {/* Progress Background Bar */}
 //         <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-700 -translate-y-1/2 z-0 rounded-full" />
-
-//         {/* Active Animated Progress Bar */}
 //         <div
 //           className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-orange-500 to-amber-500 -translate-y-1/2 z-0 rounded-full transition-all duration-500"
 //           style={{
@@ -117,7 +154,6 @@
 //           }}
 //         />
 
-//         {/* Individual Step Circles & Labels */}
 //         {ORDER_STEPS.map((step, idx) => {
 //           const isCompleted = idx <= currentStep;
 //           const isCurrent = idx === currentStep;
@@ -171,7 +207,6 @@
 //   const [searchTerm, setSearchTerm] = useState("");
 //   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
-//   // ⚡ FIX: paymentInfo.transactionId থেকে নিরাপদে Txn ID এক্সট্র্যাক্ট করার লজিক
 //   const getTransactionId = (order: Order) => {
 //     return (
 //       order?.paymentInfo?.transactionId ||
@@ -181,7 +216,6 @@
 //     );
 //   };
 
-//   // Order Cancel Handler
 //   const handleCancelOrder = async (orderId: string) => {
 //     const isConfirmed = window.confirm(
 //       "Are you sure you want to cancel this order?",
@@ -296,6 +330,11 @@
 //                 (lowerStatus === "pending" || lowerStatus === "processing");
 
 //               const isDelivered = lowerStatus === "delivered";
+
+//               const foodId =
+//                 typeof order.orderItems?.[0]?.food === "object"
+//                   ? order.orderItems[0].food._id
+//                   : order.orderItems?.[0]?.food;
 
 //               return (
 //                 <div
@@ -437,17 +476,12 @@
 //                         </button>
 //                       )}
 
-//                       {isDelivered && (
-//                         <Link
-//                           to={`/review/${
-//                             typeof order.orderItems?.[0]?.food === "object"
-//                               ? order.orderItems[0].food._id
-//                               : order.orderItems?.[0]?.food
-//                           }?orderId=${order._id}`}
-//                           className="px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-xl font-semibold text-xs transition-all flex items-center gap-1.5"
-//                         >
-//                           <Star className="w-4 h-4" /> Give Review
-//                         </Link>
+//                       {isDelivered && foodId && (
+//                         <ReviewButton
+//                           foodId={String(foodId)}
+//                           orderId={order._id}
+//                           userId={user?.id || user?._id}
+//                         />
 //                       )}
 //                     </div>
 //                   )}
@@ -558,6 +592,12 @@ interface OrdersResponse {
   result?: Order[];
 }
 
+interface ReviewResponse {
+  data?: any;
+  success?: boolean;
+  message?: string;
+}
+
 // ---------------- ⚡ REVIEW BUTTON COMPONENT ----------------
 const ReviewButton = ({
   foodId,
@@ -568,10 +608,10 @@ const ReviewButton = ({
   orderId: string;
   userId: string;
 }) => {
-  const { data: reviewResponse, isLoading } = useGetSingleReviewQuery(
-    { orderId, foodId, userId },
-    { skip: !orderId || !foodId || !userId },
-  );
+  const { data: reviewResponse, isLoading } = useGetSingleReviewQuery<{
+    data?: ReviewResponse;
+    isLoading: boolean;
+  }>({ orderId, foodId, userId }, { skip: !orderId || !foodId || !userId });
 
   const isReviewed = Boolean(reviewResponse?.data);
 
@@ -671,6 +711,7 @@ const OrderStepper = ({ status }: { status: string }) => {
     </div>
   );
 };
+
 // -------------------------------------------------------------------
 
 const MyOrder = () => {
@@ -862,7 +903,7 @@ const MyOrder = () => {
                     </div>
                   </div>
 
-                  {/* ⚡ VISUAL ORDER STEPPER */}
+                  {/* VISUAL ORDER STEPPER */}
                   <OrderStepper status={order.status} />
 
                   {/* Items Mapping */}
@@ -945,7 +986,7 @@ const MyOrder = () => {
                   </div>
 
                   {/* Action Buttons Section */}
-                  {(isCancelable || isDelivered) && (
+                  {(isCancelable || (isDelivered && foodId)) && (
                     <div className="pt-3 border-t border-slate-700/40 flex justify-end gap-3">
                       {isCancelable && (
                         <button
@@ -964,7 +1005,7 @@ const MyOrder = () => {
                         <ReviewButton
                           foodId={String(foodId)}
                           orderId={order._id}
-                          userId={user?.id || user?._id}
+                          userId={user?.id || user?._id || ""}
                         />
                       )}
                     </div>

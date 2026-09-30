@@ -40,6 +40,7 @@ export const HomePage: React.FC = () => {
     refetch,
   } = useGetPopularFoodsQuery(undefined);
 
+console.log(responseData);
 
   // Normalize Data safely without type errors
   const foodItems: IFoodItem[] = useMemo(() => {
